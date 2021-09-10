@@ -1,234 +1,280 @@
 import React from "react";
-import "../../css/Login.css";
-import QRCode from 'qrcode.react';
+
+// const useVrm = () => {
+//     const { current: loader } = useRef(new GLTFLoader());
+//     const [vrm, setVrm] = useState(null);
+
+//     const loadVrm = (url) => {
+//         loader.load(url, async (gltf) => {
+//             const vrm = await VRM.from(gltf);
+//             setVrm(vrm);
+//         });
+//     };
+
+//     // Look at camera
+//     useEffect(() => {
+//         if (!vrm || !vrm.lookAt) return;
+//         vrm.lookAt.target = camera;
+//     }, [camera, vrm]);
+
+//     return { vrm, loadVrm };
+// };
 
 export default function Login() {
-    const loadLogin = () => {
-        const email = document.getElementById("logemail");
-        const password = document.getElementById("logpass");
-        const login = document.querySelector(".btn");
-        const ptxt = document.getElementById("pword-txt");
-        const etxt = document.getElementById("email-txt");
-        const Eerror = document.getElementById("email-error");
-        const perror = document.getElementById("password-error");
-        const input = document.querySelector(".form-style");
-        const container = document.querySelector(".container");
-        const esearch = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
-        const psearch = /[a-z]{8,32}/g;
-
-        login.addEventListener("click", (e) => {
-            if (!password.value.match(psearch)) {
-                password.focus();
-                e.preventDefault();
-                password.style.borderColor = "#ec4846";
-                ptxt.style.color = "#ec4846";
-                perror.innerText =
-                    " - Password should be between 8 and 32 characters";
-            } else if (email.value === "" || !email.value.match(esearch)) {
-                email.focus();
-                e.preventDefault();
-                email.style.borderColor = "#ec4846";
-                etxt.style.color = "#ec4846";
-                Eerror.innerText = " - This is not a valid email address";
-            } else {
-                email.value = "";
-                password.value = "";
-                container.style.animation = "jump .3s linear";
-                container.addEventListener("animationend", () => {
-                    container.style.display = "none";
-                    canvas.style.transform = "translate(0vw)";
-                    // setTimeout(() => {
-                    user.login = true;
-                    //}, 1000)
-                });
-            }
-            setTimeout(() => {
-                ptxt.style.color = "#919296";
-                etxt.style.color = "#919296";
-                perror.innerText = "";
-                Eerror.innerText = "";
-                email.style.borderColor = "";
-                password.style.borderColor = "";
-            }, 2500);
-        });
-
-        const canvas = document.getElementById("svgBlob");
-        const ctx = canvas.getContext("2d");
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        let numParticles = 20;
-        let particles = [];
-
-        const colors = ["#1d1e22", "#7d8087", "#5f6988"];
-
-        const mouse = {
-            x: null,
-        };
-
-        let user = {
-            login: false,
-        };
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * canvas.width;
-                this.y = canvas.height + Math.random() * 200;
-                this.radius = Math.random() * 2 + 2;
-                this.speedX = Math.random() * 2;
-                this.moveRight = this.x + this.speedX;
-                this.moveLeft = this.x - this.speedX;
-                this.speedY = Math.random() * 0.5;
-                this.color = colors[Math.floor(Math.random() * 3)];
-            }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-                ctx.closePath();
-            }
-            update() {
-                this.draw();
-                if (!user.login) {
-                    this.y -= this.speedY;
-                } else {
-                    this.y -= 10;
-                }
-                if (this.y <= canvas.height) {
-                    if (mouse.x > canvas.width / 2) {
-                        this.x = this.moveRight;
-                    } else {
-                        this.x = this.moveLeft;
-                    }
-                }
-            }
-        }
-
-        function setup() {
-            for (let i = 0; i < numParticles; i++) {
-                particles.push(new Particle());
-            }
-        }
-
-        window.addEventListener("mousemove", (e) => {
-            mouse.x = e.x;
-        });
-
-        function animate() {
-            requestAnimationFrame(animate);
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            particles.forEach((particle, index) => {
-                particle.update();
-                if (particle.y + particle.radius < 0) {
-                    setTimeout(() => {
-                        particles.splice(index, 1);
-                    }, 0);
-                    if (!user.login) {
-                        particles.push(new Particle());
-                    }
-                }
-            });
-        }
-        setup();
-        animate();
-
-        window.addEventListener("resize", function () {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        });
-    };
     return (
-        <div className="login" onLoad={loadLogin}>
-            <canvas id="svgBlob" />
-            <div className="position">
-                <form className="container">
-                    <div className="centering-wrapper">
-                        <div className="section1 text-center">
-                            <div className="primary-header">Welcome back!</div>
-                            <div className="secondary-header">
-                                We're so excited to see you again!
-                            </div>
-                            <div className="input-position">
-                                <div className="form-group">
-                                    <h5
-                                        className="input-placeholder"
-                                        id="email-txt"
-                                    >
-                                        Email
-                                        <span
-                                            className="error-message"
-                                            id="email-error"
-                                        />
-                                    </h5>
-                                    <input
-                                        type="email"
-                                        required="true"
-                                        name="logemail"
-                                        className="form-style"
-                                        id="logemail"
-                                        autoComplete="off"
-                                        style={{ marginBottom: "20px" }}
-                                    />
-                                    <i className="input-icon uil uil-at" />
-                                </div>
-                                <div className="form-group">
-                                    <h5
-                                        className="input-placeholder"
-                                        id="pword-txt"
-                                    >
-                                        Password
-                                        <span
-                                            className="error-message"
-                                            id="password-error"
-                                        />
-                                    </h5>
-                                    <input
-                                        type="password"
-                                        required="true"
-                                        name="logpass"
-                                        className="form-style"
-                                        id="logpass"
-                                        autoComplete="on"
-                                    />
-                                    <i className="input-icon uil uil-lock-alt" />
-                                </div>
-                            </div>
-                            <div className="password-container">
-                                <a href="#" className="link">
-                                    Forgot your password?
-                                </a>
-                            </div>
-                            <div className="btn-position">
-                                <a href="#" className="btn">
-                                    login
-                                </a>
-                            </div>
-                        </div>
-                        <div className="horizontalSeparator" />
-                        <div className="qr-login">
-                            <div className="qr-container">
-                                {/* <img
-                                    className="logo w-24 h-24 mask mask-squircle bg-white"
-                                    src="../images/logo.svg"
-                                /> */}
-                                {/* <canvas id="qr-code" /> */}
-                                <QRCode
-                                    value="http://facebook.github.io/react/"
-                                    id="qr-code"
-                                    size={170}
-                                />
-                            </div>
-                            <div className="qr-pheader">
-                                Log in with QR Code
-                            </div>
-                            <div className="qr-sheader">
-                                Scan this with the <strong>scanner app </strong>
-                                to log in instantly.
-                            </div>
+        <main
+            className="flex flex-col h-screen bg-black"
+        >
+            <div className="grid grid-cols-1 md:grid-cols-2">
+                <div className="md:row-start-1 md:col-start-2 md:col-end-2 p-12">
+                    <div className="flex flex-col justify-center h-full">
+                        {/* <img
+                            src="../../images/logo.svg"
+                            className="w-24 mb-14"
+                        /> */}
+                        <svg
+                            id="logo"
+                            className="cursor-pointer w-24 h-24 mb-14"
+                            width="306"
+                            height="306"
+                            viewBox="0 0 306 306"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                        >
+                            <rect
+                                x="198.951"
+                                y="0.972168"
+                                width="60"
+                                height="140"
+                                rx="30"
+                                transform="rotate(45 198.951 0.972168)"
+                                fill="#79DE79"
+                            />
+                            <rect
+                                x="107.028"
+                                y="305.028"
+                                width="60"
+                                height="140"
+                                rx="30"
+                                transform="rotate(-135 107.028 305.028)"
+                                fill="#FCFC99"
+                            />
+                            <rect
+                                x="305.019"
+                                y="198.962"
+                                width="60"
+                                height="140"
+                                rx="30"
+                                transform="rotate(135 305.019 198.962)"
+                                fill="#A8E4EF"
+                            />
+                            <rect
+                                x="0.961914"
+                                y="107.038"
+                                width="60"
+                                height="140"
+                                rx="30"
+                                transform="rotate(-45 0.961914 107.038)"
+                                fill="#FB6962"
+                            />
+                        </svg>
+                        <h1 className="text-5xl lg:text-7xl font-bold mb-12">
+                            HÃY TƯỞNG TƯỢNG MỘT NƠI…
+                        </h1>
+                        <h2 className="text-2xl lg:text-3xl font-bold mb-4 lg:mb-8">
+                            …Nơi mà giúp bạn dễ dàng trò chuyện hàng ngày và gặp
+                            mặt thường xuyên hơn.
+                        </h2>
+                        <div className="flex flex-col">
+                            <button
+                                className="
+                  p-4
+                  mb-4
+                  font-bold
+                  rounded-full
+                  text-sm
+                  lg:w-2/5
+                  text-black
+                  bg-white
+                "
+                            >
+                                Đăng ký
+                            </button>
+                            <button
+                                className="
+                  p-4
+                  mb-4
+                  border
+                  font-bold
+                  rounded-full
+                  text-sm
+                  lg:w-2/5
+                  border-white
+                "
+                            >
+                                Đăng nhập
+                            </button>
                         </div>
                     </div>
-                </form>
+                </div>
+                <div
+                    className="md:row-start-1 md:col-start-1 md:col-end-1"
+                    style={{ height: "95vh" }}
+                >
+                    <div
+                        className="bg-cover bg-no-repeat h-full bg-center"
+                        style={{
+                            backgroundImage:
+                                // "url(../../images/Unsplash.png)",
+                                "url(https://source.unsplash.com/random)",
+                        }}
+                    >
+                        {/* <div className="flex justify-center items-center h-full">
+                            <img src="../../images/logo.svg" />
+                        </div> */}
+                    </div>
+                </div>
             </div>
-        </div>
+            <nav className="p-2">
+                <ul className="flex flex-wrap justify-center">
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Acerca de
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Centro de ayuda
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Condiciones de Servicio
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Política de Privacidad
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Política de cookies
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Información de anuncios
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Blog
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Estado
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Empleos
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Recursos para marcas
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Publicidad
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Marketing
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Twitter para empresas
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Desarrolladores
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Guía
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            Configuración
+                        </a>
+                    </li>
+                    <li className="text-xs text-gray-500 mx-2 my-1">
+                        <a
+                            className="border-b-2 border-transparent hover:border-gray-400"
+                            href="/"
+                        >
+                            © 2021 Twitter, Inc.
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </main>
     );
 }

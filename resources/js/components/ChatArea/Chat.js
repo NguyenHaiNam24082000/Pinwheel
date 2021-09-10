@@ -4,7 +4,7 @@ import socketIOClient from "socket.io-client";
 import { Picker } from "emoji-mart";
 import "../../../css/font-effect.css";
 import "emoji-mart/css/emoji-mart.css";
-import { $ } from "jquery";
+import { Howl, Howler } from "howler";
 const axios = require("axios");
 const reactStringReplace = require("react-string-replace");
 
@@ -115,7 +115,7 @@ export default function Chat() {
                 var meta = documentoBody.querySelector(
                     'meta[property="og:image"]'
                 );
-                setImage( meta && meta.getAttribute("content"));
+                setImage(meta && meta.getAttribute("content"));
             })
             .catch(function (err) {
                 console.log(err);
@@ -230,6 +230,19 @@ export default function Chat() {
         setMessage(message + emoji.native);
     };
 
+    const makeCall = () => {
+        var sound = new Howl({
+            src: ["../../../assets/sounds/call/retro.mp3"],
+            autoplay: true,
+            loop: true,
+            volume: 0.75,
+            onend: function () {
+                console.log("Finished!");
+            },
+        });
+        sound.play();
+    };
+
     return (
         <div
             className="flex flex-col bg-base-200 w-6/12 h-full rounded-box"
@@ -251,7 +264,7 @@ export default function Chat() {
             >
                 <div className="ml-4 font-bold text-black">CNTT4K59</div>
                 <div className="-space-x-5 avatar-group mr-4">
-                    <div
+                    {/* <div
                         className="avatar"
                         style={{ border: "none !important" }}
                     >
@@ -278,7 +291,18 @@ export default function Chat() {
                         <div className="w-8 h-8 rounded-full bg-neutral-focus text-neutral-content">
                             <span>+99</span>
                         </div>
-                    </div>
+                    </div> */}
+                    <button
+                        className="btn btn-primary btn-square mask mask-squircle justify-center items-center"
+                        onClick={makeCall}
+                    >
+                        <lord-icon
+                            src="https://cdn.lordicon.com/soseozvi.json"
+                            trigger="loop-on-hover"
+                            colors="primary:#121331,secondary:#fb6962"
+                            className="w-full h-full"
+                        />
+                    </button>
                 </div>
             </div>
             <div className="flex flex-col w-full h-full overflow-y-auto">

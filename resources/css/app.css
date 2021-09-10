@@ -132,3 +132,40 @@
       background-position: 0% 50%;
     }
   }
+
+  #logo:hover {
+    -webkit-animation: spin 2.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    animation: spin 2.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+#logo:hover rect
+{
+   -webkit-animation: widen 2.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;;
+          animation: widen 2.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;;
+}
+
+@-webkit-keyframes widen {
+  50%, 70% {
+    height: 60px;
+  }
+}
+@keyframes widen {
+  50%, 70% {
+    height: 60px;
+  }
+}
+@-webkit-keyframes spin {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(-720deg);
+    }
+}
+@keyframes spin {
+    0% {
+        transform: rotate(0);
+    }
+    100% {
+        transform: rotate(-720deg);
+    }
+}
