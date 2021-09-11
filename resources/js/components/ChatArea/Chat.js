@@ -1,22 +1,22 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { FaPaperPlane } from "react-icons/fa";
+import { FaPaperPlane, FaVideo } from "react-icons/fa";
 import socketIOClient from "socket.io-client";
 import { Picker } from "emoji-mart";
 import "../../../css/font-effect.css";
 import "emoji-mart/css/emoji-mart.css";
 import { Howl, Howler } from "howler";
-const axios = require("axios");
+import LinkPreview from "@ashwamegh/react-link-preview";
+import "@ashwamegh/react-link-preview/dist/index.css";
+import ContentLoader from 'react-content-loader'
 const reactStringReplace = require("react-string-replace");
 
 const host = "http://localhost:8000";
-const cors_api_host = "cors-anywhere.herokuapp.com";
-const cors_api_url = "https://" + cors_api_host + "/";
+const cors_api_url = "https://cryptic-headland-94862.herokuapp.com/";
 
 export default function Chat() {
     const [showEmoji, setShowEmoji] = useState(false);
     const [mess, setMess] = useState([]);
     const [message, setMessage] = useState("");
-    const [image, setImage] = useState("");
     const [effect, setEffect] = useState("");
     const [id, setId] = useState("");
     const socketRef = useRef();
@@ -57,6 +57,16 @@ export default function Chat() {
 
     const sendMessage = () => {
         if (message !== null && message.length !== 0) {
+            var sound = new Howl({
+                src: ["../../../assets/sounds/message/message-long-pop.wav"],
+                autoplay: true,
+                loop: false,
+                volume: 0.75,
+                onend: function () {
+                    console.log("Finished!");
+                },
+            });
+            sound.play();
             const msg = {
                 effect: effect,
                 content: message,
@@ -103,24 +113,39 @@ export default function Chat() {
         } else return <>{content}</>;
     });
 
-    const getImageUrl = useCallback((content) => {
-        const parser = new DOMParser();
-        axios
-            .get(`${cors_api_url}${content}`)
-            .then(function (response) {
-                const documentoBody = parser.parseFromString(
-                    response.data,
-                    "text/html"
-                );
-                var meta = documentoBody.querySelector(
-                    'meta[property="og:image"]'
-                );
-                setImage(meta && meta.getAttribute("content"));
-            })
-            .catch(function (err) {
-                console.log(err);
-            });
-    });
+    function CustomComponent({ loading, preview }) {
+        return loading ? (
+                <ContentLoader
+                    viewBox="0 0 500 280"
+                    height={280}
+                    width={500}
+                >
+                    <rect x="3" y="3" rx="10" ry="10" width="300" height="180" />
+                    <rect x="6" y="190" rx="0" ry="0" width="292" height="20" />
+                    <rect x="4" y="215" rx="0" ry="0" width="239" height="20" />
+                    <rect x="4" y="242" rx="0" ry="0" width="274" height="20" />
+                </ContentLoader>
+        ) : (
+            <a
+                className="flex flex-col rounded-box w-full mt-3 border cursor-pointer"
+                target="_blank"
+                href={
+                    preview.domain.includes("http")
+                        ? preview.domain
+                        : `http://${preview.domain}`
+                }
+            >
+                <img
+                    className="w-full h-auto rounded-t-box"
+                    src={preview.img}
+                    alt={preview.title}
+                />
+                <h3 className="text-xl font-bold mt-2 pl-3">{preview.title}</h3>
+                <p className="pl-3">{preview.description}</p>
+                <p className="mb-2 pl-3">{preview.domain}</p>
+            </a>
+        );
+    }
 
     const renderMess = mess.map((m, index) => (
         <>
@@ -131,7 +156,7 @@ export default function Chat() {
                 } p-3 m-4`}
                 style={{ width: "calc(100% - 32px)" }}
             >
-                <div className="avatar mr-3 online">
+                <div className="avatar mr-3">
                     <div className="w-12 h-12 mask mask-squircle">
                         <img src="https://scontent.fhan5-4.fna.fbcdn.net/v/t1.6435-9/62498267_1122772321257230_1257182363998224384_n.jpg?_nc_cat=104&ccb=1-5&_nc_sid=09cbfe&_nc_ohc=fCfCkv9GMpYAX-5XEzu&_nc_ht=scontent.fhan5-4.fna&oh=8c591abd1ca6feb8e2f44f1acf183c5d&oe=615B52A1" />
                     </div>
@@ -145,59 +170,20 @@ export default function Chat() {
                         <div>24:00</div>
                     </div>
                     <div className={m.effect}>
-                        {/* {m.content.match(
-                            /((([A-Za-z]{3,9}:(?:\/\/)?)(?:[-;:&=\+\$,\w]+@)?[A-Za-z0-9.-]+|(?:www.|[-;:&=\+\$,\w]+@)[A-Za-z0-9.-]+)((?:\/[\+~%\/.\w-_]*)?\??(?:[-\+=&;%@.\w_]*)#?(?:[\w]*))?)/g
-                        ) ? (
-                            <a
-                                href={`${
-                                    m.content.includes("http")
-                                        ? m.content
-                                        : `https://${m.content}`
-                                }`}
-                                target="_blank"
-                                title=""
-                                className="hover:underline text-info"
-                                style={{ cursor: "pointer" }}
-                            >
-                                {m.content}
-                            </a>
-                        ) : (
-                            m.content
-                        )} */}
                         {normalizeContent(m.content)}
-                        {/* {m.content.match(/(https?:\/\/\S+)/g) &&
+                        {m.content.match(/(https?:\/\/\S+)/g) &&
                             m.content
                                 .match(/(https?:\/\/\S+)/g)
                                 .map((value, index) => (
-                                    <div key={index}>{getImageUrl(value)}<img src={image} /></div>
-                                ))} */}
+                                    <LinkPreview
+                                        url={value}
+                                        key={index}
+                                        render={CustomComponent}
+                                    />
+                                ))}
                     </div>
                 </div>
             </div>
-            {/* <div className="divider px-3">Last month</div>
-                <div
-                    className="flex rounded-box bg-base-300 p-3 m-4"
-                    style={{ width: "calc(100% - 32px)" }}
-                >
-                    <div className="avatar mr-3 online">
-                        <div className="w-12 h-12 mask mask-squircle">
-                            <img src="http://daisyui.com/tailwind-css-component-profile-1@94w.png" />
-                        </div>
-                    </div>
-                    <div
-                        className="flex flex-col break-words"
-                        style={{ width: "calc(100% - 72px)" }}
-                    >
-                        <div className="flex justify-between w-full">
-                            <div className="font-bold">Nguyễn</div>
-                            <div>24:00</div>
-                        </div>
-                        <div>
-                            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-                            AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-                        </div>
-                    </div>
-                </div> */}
         </>
     ));
 
@@ -264,44 +250,11 @@ export default function Chat() {
             >
                 <div className="ml-4 font-bold text-black">CNTT4K59</div>
                 <div className="-space-x-5 avatar-group mr-4">
-                    {/* <div
-                        className="avatar"
-                        style={{ border: "none !important" }}
-                    >
-                        <div className="w-8 h-8">
-                            <img src="http://daisyui.com/tailwind-css-component-profile-1@40w.png" />
-                        </div>
-                    </div>
-                    <div className="avatar">
-                        <div className="w-8 h-8">
-                            <img src="http://daisyui.com/tailwind-css-component-profile-2@40w.png" />
-                        </div>
-                    </div>
-                    <div className="avatar">
-                        <div className="w-8 h-8">
-                            <img src="http://daisyui.com/tailwind-css-component-profile-3@40w.png" />
-                        </div>
-                    </div>
-                    <div className="avatar">
-                        <div className="w-8 h-8">
-                            <img src="http://daisyui.com/tailwind-css-component-profile-5@40w.png" />
-                        </div>
-                    </div>
-                    <div className="avatar placeholder">
-                        <div className="w-8 h-8 rounded-full bg-neutral-focus text-neutral-content">
-                            <span>+99</span>
-                        </div>
-                    </div> */}
                     <button
                         className="btn btn-primary btn-square mask mask-squircle justify-center items-center"
                         onClick={makeCall}
                     >
-                        <lord-icon
-                            src="https://cdn.lordicon.com/soseozvi.json"
-                            trigger="loop-on-hover"
-                            colors="primary:#121331,secondary:#fb6962"
-                            className="w-full h-full"
-                        />
+                        <FaVideo />
                     </button>
                 </div>
             </div>

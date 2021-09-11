@@ -19,7 +19,6 @@
     </head>
     <body class="flex h-screen w-screen overflow-hidden">
         <div id="app" class="flex h-screen w-screen overflow-hidden"></div>
-        <script src="https://cdn.lordicon.com/libs/mssddfmo/lord-icon-2.1.0.js"></script>
         <script src="{{ asset('js/app.js')}}"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
         <script>

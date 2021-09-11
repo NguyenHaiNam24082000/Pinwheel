@@ -1,25 +1,5 @@
 import React from "react";
 
-// const useVrm = () => {
-//     const { current: loader } = useRef(new GLTFLoader());
-//     const [vrm, setVrm] = useState(null);
-
-//     const loadVrm = (url) => {
-//         loader.load(url, async (gltf) => {
-//             const vrm = await VRM.from(gltf);
-//             setVrm(vrm);
-//         });
-//     };
-
-//     // Look at camera
-//     useEffect(() => {
-//         if (!vrm || !vrm.lookAt) return;
-//         vrm.lookAt.target = camera;
-//     }, [camera, vrm]);
-
-//     return { vrm, loadVrm };
-// };
-
 export default function Login() {
     return (
         <main
