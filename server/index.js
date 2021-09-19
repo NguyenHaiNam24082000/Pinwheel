@@ -7,8 +7,19 @@ const socketIo = require("socket.io")(server, {
     cors: {
         origin: "*",
     }
-  });
+});
 
+// const Redis = require("ioredis");
+// const redis = new Redis(1000);
+
+// redis.psubscribe("*",function(error,count){
+
+// })
+
+// redis.on('message',function(partner,channel,message) {
+//   console.log(partner,channel,message);
+//   console.log("send")
+// })
 
 socketIo.on("connection", (socket) => {
   console.log("New client connected" + socket.id);

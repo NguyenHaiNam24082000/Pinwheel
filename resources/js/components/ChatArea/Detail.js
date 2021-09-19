@@ -1,17 +1,31 @@
 import React from 'react';
 import { BsFileEarmark } from "react-icons/bs";
+import $ from 'jquery';
+import { OperationType } from '@firebase/auth';
 
 export default function Detail() {
+    const openTabChanel = () =>{
+        $(".tab").toggleClass("tab-active");
+        $(".tab-chanel").addClass("tab-active");
+        $(".chanel").show();
+        $(".detail").hide();
+    }
+    const openTabDetail = () =>{
+        $(".tab").toggleClass("tab-active");
+        $(".tab-detail").addClass("tab-active");
+        $(".detail").show();
+        $(".chanel").hide();
+    }
     return (
         <div className="flex flex-col ml-4 w-3/12 h-full rounded-box">
                 <div className="flex items-center w-full h-16 border-b text-xl">
                     <div className="tabs tabs-boxed w-full">
-                        <a className="tab tab-active w-3/6">Detail</a>
-                        <a className="tab w-3/6">Chanels</a>
+                        <a className="tab tab-active w-3/6 tab-detail" onClick={openTabDetail}>Detail</a>
+                        <a className="tab w-3/6 tab-chanel" onClick={openTabChanel}>Chanels</a>
                     </div>
                 </div>
                 <div
-                    className="flex flex-col overflow-y-auto w-full"
+                    className="flex flex-col overflow-y-auto w-full detail"
                     style={{ height: "calc(100% - 64px)" }}
                 >
                     <div className="flex flex-col items-center mb-5">
@@ -117,6 +131,9 @@ export default function Detail() {
                             </div>
                         </div>
                     </div>
+                </div>
+                <div className="chanel flex flex-col overflow-y-auto w-full" style={{display: "none"}}>
+                    
                 </div>
             </div>
 

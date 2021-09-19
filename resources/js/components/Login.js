@@ -105,10 +105,12 @@ export default function Login() {
                         className="bg-cover bg-no-repeat h-full bg-center"
                         style={{
                             backgroundImage:
-                                // "url(../../images/Unsplash.png)",
-                                "url(https://source.unsplash.com/random)",
+                                // "url(../../images/plannet.gif)",
+                                "url(../../images/bg_login.jpg)",
+                                // "url(https://source.unsplash.com/random)",
                         }}
                     >
+                        {/* <video src={`../../images/background/bg_video_${Math.floor(Math.random()*12)}.mp4`} autoPlay muted loop className="w-full h-full"></video> */}
                         {/* <div className="flex justify-center items-center h-full">
                             <img src="../../images/logo.svg" />
                         </div> */}
@@ -120,9 +122,9 @@ export default function Login() {
                     <li className="text-xs text-gray-500 mx-2 my-1">
                         <a
                             className="border-b-2 border-transparent hover:border-gray-400"
-                            href="/"
+                            href='https://www.freepik.com/vectors/design'
                         >
-                            Acerca de
+                            Design vector created by coolvector - www.freepik.com
                         </a>
                     </li>
                     <li className="text-xs text-gray-500 mx-2 my-1">

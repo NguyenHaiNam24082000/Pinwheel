@@ -23,6 +23,7 @@
         "postcss": "^8.3.6",
         "react": "^17.0.2",
         "react-dom": "^17.0.2",
+        "react-script-tag": "^1.1.2",
         "sass": "^1.32.11",
         "sass-loader": "^11.0.1",
         "tailwindcss": "^2.2.9",
@@ -30,6 +31,7 @@
     },
     "dependencies": {
         "@ashwamegh/react-link-preview": "^0.2.2",
+        "@bigheads/core": "^0.3.3",
         "@dicebear/avatars": "^4.9.0",
         "@dicebear/avatars-avataaars-sprites": "^4.8.6",
         "@dicebear/avatars-bottts-sprites": "^4.8.6",
@@ -46,6 +48,7 @@
         "@giphy/js-fetch-api": "^4.1.1",
         "@giphy/react-components": "^5.1.1",
         "ace-builds": "^1.4.12",
+        "avataaars": "^2.0.0",
         "cors": "^2.8.5",
         "daisyui": "^1.14.0",
         "dayjs": "^1.10.6",
@@ -56,13 +59,18 @@
         "imagekitio-react": "^1.0.11",
         "intro.js": "^4.2.2",
         "ioredis": "^4.27.9",
+        "p5": "^1.4.0",
         "particles.js": "^2.0.0",
         "peerjs": "^1.3.2",
         "qrcode.react": "^1.0.1",
+        "rctx-contextmenu": "^1.3.5",
         "react-content-loader": "^6.0.3",
+        "react-hot-toast": "^2.1.1",
         "react-icons": "^4.2.0",
         "react-insta-stories": "^2.2.3",
         "react-native-svg": "^12.1.1",
+        "react-nice-avatar": "^1.2.4",
+        "react-p5": "^1.3.19",
         "react-reactions": "^0.1.3",
         "react-router-dom": "^5.3.0",
         "react-smooth-list": "^1.0.2",
@@ -74,6 +82,7 @@
         "socket.io-client": "^4.2.0",
         "swiper": "^7.0.4",
         "three": "^0.132.2",
-        "uuid": "^8.3.2"
+        "uuid": "^8.3.2",
+        "wavesurfer.js": "^5.2.0"
     }
 }

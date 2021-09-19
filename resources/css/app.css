@@ -14,6 +14,12 @@
     --color-white-primary: #fff;
     --color-black-primary: #000;
     /* --color-gradient-primary:  */
+    --blue: #0AAFFF;
+	--purple: #7551E9;
+	--orange: #FF7D51;
+	--pink: #ED63D2;
+	--green: #2DCA73;
+	--yellow: #FFC212;
 }
 
 ::-webkit-scrollbar

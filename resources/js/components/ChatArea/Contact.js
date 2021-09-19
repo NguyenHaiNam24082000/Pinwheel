@@ -1,7 +1,34 @@
-import React from 'react';
+import React,{useRef,useEffect,useState} from 'react';
+import {socket} from '../../context/socket';
 import { FiPlus, FiMenu } from "react-icons/fi";
 
 export default function Contact() {
+    const socketRef = useRef();
+    const [mess, setMess] = useState("");
+
+    useEffect(() => {
+        // axios
+        //     .get("/api/chat")
+        //     .then(function (response) {
+        //         // handle success
+        //         setMess((oldMsgs) => [...oldMsgs, ...response.data.chat]);
+        //         console.log(response);
+        //     })
+        //     .catch(function (error) {
+        //         // handle error
+        //         console.log(error);
+        //     });
+
+        socketRef.current = socket;
+
+        socketRef.current.on("serverSendData", (dataGot) => {
+            setMess( dataGot.data);
+            //scrollToBottom();
+        });
+
+        return () => {
+        };
+    }, []);
     return (
         <div className="flex flex-col mr-4 w-3/12 h-full rounded-box">
                 <div
@@ -68,9 +95,11 @@ export default function Contact() {
                             </div>
                         </div>
 
-                        <div className="flex flex-col w-full">
-                            <div>Nguyễn</div>
-                            <div>Abc Xyz aaaaaaaa</div>
+                        <div className="flex flex-col w-full truncate overflow-ellipsis">
+                            <div className="truncate font-bold">Nguyễn</div>
+                            <div className="truncate">
+                            {mess.content}
+                            </div>
                         </div>
 
                         <div className="w-10 flex justify-center items-center">

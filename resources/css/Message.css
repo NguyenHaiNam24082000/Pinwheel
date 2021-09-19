@@ -1,0 +1,107 @@
+.animation {
+    z-index: 0;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    width: 480px;
+    height: 390px;
+  }
+  .animation__item {
+    width: 2rem;
+    height: 2rem;
+    position: absolute;
+    -webkit-animation: centerIn 1s ease-out forwards;
+            animation: centerIn 1s ease-out forwards;
+  }
+  
+  @-webkit-keyframes centerIn {
+    from {
+      left: 50%;
+      top: 50%;
+      bottom: 50%;
+      right: 50%;
+      transform: translate(-50%, -50%) rotate(-315deg);
+      opacity: 1;
+    }
+    to {
+      transform: initial;
+      opacity: 0;
+    }
+  }
+  
+  @keyframes centerIn {
+    from {
+      left: 50%;
+      top: 50%;
+      bottom: 50%;
+      right: 50%;
+      transform: translate(-50%, -50%) rotate(-315deg);
+      opacity: 1;
+    }
+    to {
+      transform: initial;
+      opacity: 0;
+    }
+  }
+
+  .action {
+    cursor: pointer;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+    text-align: center;
+    line-height: 1;
+    transition: all 0.1s ease-out 0s;
+    position: relative;
+    z-index: 200;
+    background: none;
+    border: 0;
+  }
+  .action:before {
+    content: "";
+    position: absolute;
+    background: var(--pink);
+    opacity: 0.2;
+    width: 0px;
+    height: 0px;
+    display: block;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    border-radius: 50%;
+    transition: all 0.2s ease-out 0s;
+  }
+  .action__icon {
+    width: 2rem;
+    height: 2rem;
+    color: var(--text-color);
+  }
+  .action__label {
+    font-size: 1.6rem;
+    color: var(--gray-light);
+  }
+  .action__container {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .action:hover, .action:focus {
+    color: var(--pink);
+  }
+  .action:hover:before, .action:focus:before {
+    width: 45px;
+    height: 45px;
+    transition: all 0.2s ease-out 0s;
+  }
+  .action:active, .action:focus {
+    outline: 0;
+  }
+  .action:active .action__icon, .action:focus .action__icon {
+    color: var(--pink);
+    fill: var(--pink);
+  }
+  .action:active .action__label, .action:focus .action__label {
+    color: var(--pink);
+  }
