@@ -28,15 +28,15 @@ const reactStringReplace = require("react-string-replace");
 const axios = require("axios").default;
 import { socket } from "../../context/socket";
 import Message from './Message';
-import { particlesJS } from "particles.js";
-import Audio from "../Audio";
 const host = "http://localhost:8000";
 const cors_api_url = "https://cryptic-headland-94862.herokuapp.com/";
+import SmoothList from 'react-smooth-list';
 
 function Chat() {
     const [showEmoji, setShowEmoji] = useState(false);
     const [mess, setMess] = useState([]);
     const [message, setMessage] = useState("");
+    const [file, setFile] = useState();
     const [effect, setEffect] = useState("");
     const [id, setId] = useState("");
     const socketRef = useRef();
@@ -284,7 +284,7 @@ function Chat() {
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
                 backgroundImage:
-                    "url(https://scontent.fsgn5-6.fna.fbcdn.net/v/t39.30808-6/241211637_3221420104649102_3802586585466076299_n.jpg?_nc_cat=1&ccb=1-5&_nc_sid=8bfeb9&_nc_ohc=Pig8M3EWf1QAX8OrZPf&_nc_ht=scontent.fsgn5-6.fna&oh=c01379979281376f43b527acb3c1ca64&oe=613BACD0)",
+                    "url(https://cdnb.artstation.com/p/assets/images/images/041/618/763/large/ella-kremer-ponyo.jpg?1632222730)",
             }}
         >
             <input
@@ -327,9 +327,9 @@ function Chat() {
                     </div>
                 </div> */}
             {/* </div> */}
-            <div className="w-full block" style={{ height: "90px" }}>
+            <div className="w-full inline-flex absolute h-16">
                 <div
-                    className="flex items-center w-full h-full border-b text-xl justify-between"
+                    className="inline-flex items-center w-full h-full border-b text-xl justify-between"
                     style={{
                         background: "rgba(255,255,255,0.3)",
                         borderTopLeftRadius: "var(--rounded-box,1rem)",
@@ -350,13 +350,13 @@ function Chat() {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col w-full h-full overflow-y-auto">
+            <SmoothList className="flex flex-col w-full h-full overflow-y-auto mt-16">
                 {renderMess}
                 <div
                     style={{ float: "left", clear: "both" }}
                     ref={messagesEnd}
                 ></div>
-            </div>
+            </SmoothList>
             <div
                 className="flex flex-col h-auto rounded-box bg-base-300 m-4 items-center"
                 style={{ width: "calc(100% - 32px)" }}
@@ -473,8 +473,8 @@ function Chat() {
                             className="p-2 shadow menu dropdown-content bg-base-100 rounded-box w-52"
                         >
                             <li>
-                                <a>
-                                    <IoFolderOpen className="mr-2" />
+                                <a href="/login">
+                                    <IoFolderOpen className="mr-2"  />
                                     Chọn từ tập tin
                                 </a>
                             </li>

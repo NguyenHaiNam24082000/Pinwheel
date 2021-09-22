@@ -1,57 +1,16 @@
 import React from "react";
-import '../../css/Sidebar.css';
+import "../../css/Sidebar.css";
 import { HiOutlineColorSwatch } from "react-icons/hi";
 
-export default function Sidebar({theme, setThemeMode}) {
+export default function Sidebar({ theme, setThemeMode }) {
     return (
         <div className="flex flex-col w-20 h-full justify-between items-center position-relative">
             <div className="mt-3">
-                <svg
-                    id="logo"
-                    className="cursor-pointer w-10 h-10"
-                    width="306"
-                    height="306"
-                    viewBox="0 0 306 306"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                >
-                    <rect
-                        x="198.951"
-                        y="0.972168"
-                        width="60"
-                        height="140"
-                        rx="30"
-                        transform="rotate(45 198.951 0.972168)"
-                        fill="#79DE79"
-                    />
-                    <rect
-                        x="107.028"
-                        y="305.028"
-                        width="60"
-                        height="140"
-                        rx="30"
-                        transform="rotate(-135 107.028 305.028)"
-                        fill="#FCFC99"
-                    />
-                    <rect
-                        x="305.019"
-                        y="198.962"
-                        width="60"
-                        height="140"
-                        rx="30"
-                        transform="rotate(135 305.019 198.962)"
-                        fill="#A8E4EF"
-                    />
-                    <rect
-                        x="0.961914"
-                        y="107.038"
-                        width="60"
-                        height="140"
-                        rx="30"
-                        transform="rotate(-45 0.961914 107.038)"
-                        fill="#FB6962"
-                    />
-                </svg>
+                <img
+                    src="../../images/logo.gif"
+                    alt="logo"
+                    className="cursor-pointer w-16 h-16 mask mask-squircle"
+                />
             </div>
             <div className="flex flex-col justify-center">
                 <div tabIndex="0" className="m-1 btn btn-primary">

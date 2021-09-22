@@ -5,16 +5,18 @@ import { Route, Switch, BrowserRouter } from "react-router-dom";
 import Login from "./Login";
 import Avatar from "./Avatar";
 import VideoCall from "./VideoCall";
+import Loading from "./Loading";
 import Audio from "./Audio";
 import toast, { Toaster } from "react-hot-toast";
-import {BiWifiOff,BiWifi} from 'react-icons/bi';
+import { BiWifiOff, BiWifi } from "react-icons/bi";
+import AuthProvider from "../context/AuthProvider";
 
 function Index() {
     let isOnline = true;
     useEffect(() => {
         const interval = setInterval(() => {
             let xhr = new XMLHttpRequest();
-            xhr.open("GET", "https://jsonplaceholder.typicode.com/posts", true); 
+            xhr.open("GET", "https://jsonplaceholder.typicode.com/posts", true);
             xhr.onload = () => {
                 if (xhr.status === 200 && xhr.status < 300) {
                     if (isOnline === true) {
@@ -23,25 +25,29 @@ function Index() {
                     isOnline = false;
                 } else {
                     if (isOnline === false) {
-                        offline(); 
+                        offline();
                     }
                     isOnline = true;
                 }
             };
             xhr.onerror = () => {
                 if (isOnline === false) {
-                    offline(); 
+                    offline();
                 }
                 isOnline = true;
             };
-            xhr.send(); 
+            xhr.send();
         }, 1000);
         return () => clearInterval(interval);
     }, []);
     const [theme, setTheme] = useState(localStorage.getItem("theme"));
 
     const setThemeMode = () => {
-        toast.success(`Successfully changed ${localStorage.getItem("theme").toUpperCase()} theme!`)
+        toast.success(
+            `Successfully changed ${localStorage
+                .getItem("theme")
+                .toUpperCase()} theme!`
+        );
         setTheme(localStorage.getItem("theme"));
     };
 
@@ -55,11 +61,11 @@ function Index() {
                 <div className="flex-1 w-0 p-4">
                     <div className="flex items-start">
                         <div className="flex-shrink-0 pt-0.5">
-                            <BiWifi className="h-10 w-10 rounded-full text-green-400"/>
+                            <BiWifi className="h-10 w-10 rounded-full text-green-400" />
                         </div>
                         <div className="ml-3 flex-1">
                             <p className="text-sm font-medium text-gray-900">
-                            You're online now
+                                You're online now
                             </p>
                             <p className="mt-1 text-sm text-gray-500">
                                 Hurray! Internet is connected.
@@ -80,7 +86,7 @@ function Index() {
                 <div className="flex-1 w-0 p-4">
                     <div className="flex items-start">
                         <div className="flex-shrink-0 pt-0.5">
-                            <BiWifiOff className="h-10 w-10 rounded-full text-red-400"/>
+                            <BiWifiOff className="h-10 w-10 rounded-full text-red-400" />
                         </div>
                         <div className="ml-3 flex-1">
                             <p className="text-sm font-medium text-gray-900">
@@ -110,22 +116,31 @@ function Index() {
 
     return (
         <BrowserRouter>
-            <Switch>
-                <Route component={Login} path="/login" />
-                <Route component={Avatar} path="/avatar" />
-                <Route component={VideoCall} path="/videocall" />
-                <Route component={Audio} path="/audio" />
-                <Route path="/">
-                    <div
-                        className="w-full flex h-full bg-base-100 text-base-content"
-                        data-theme={theme}
-                    >
-                        <Sidebar setThemeMode={setThemeMode} theme={theme} />
-                        <ChatArea />
-                        <Toaster position="bottom-left" reverseOrder={false} />
-                    </div>
-                </Route>
-            </Switch>
+            <AuthProvider>
+                <Switch>
+                    <Route component={Login} path="/login" />
+                    <Route component={Avatar} path="/avatar" />
+                    <Route component={VideoCall} path="/videocall" />
+                    <Route component={Audio} path="/audio" />
+                    <Route exact path="/">
+                        <div
+                            className="w-full flex h-full bg-base-100 text-base-content"
+                            data-theme={theme}
+                        >
+                            <Sidebar
+                                setThemeMode={setThemeMode}
+                                theme={theme}
+                            />
+                            <ChatArea />
+                            <Toaster
+                                position="bottom-left"
+                                reverseOrder={false}
+                            />
+                        </div>
+                    </Route>
+                    <Route component={Loading} path="/loading" />
+                </Switch>
+            </AuthProvider>
         </BrowserRouter>
     );
 }

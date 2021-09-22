@@ -117,7 +117,7 @@ export default function Media({ url }) {
                     className="info inline-flex flex-col "
                     style={{ width: "calc(100% - 172px)" }}
                 >
-                    <div className="detail flex justify-center items-center mt-3 mb-3">
+                    <div className=" flex justify-center items-center mt-3 mb-3">
                         <div className="title flex flex-col items-center">
                             TheFatRat - Upwind
                             <div className="time">

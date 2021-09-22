@@ -13,11 +13,25 @@ class CreateMessagesTable extends Migration
      */
     public function up()
     {
+        // Schema::create('messages', function (Blueprint $table) {
+        //     $table->id();
+        //     $table->string('username');
+        //     $table->text('content');
+        //     $table->boolean('status')->default(false);
+        //     $table->timestamps();
+        // });
         Schema::create('messages', function (Blueprint $table) {
-            $table->id();
-            $table->string('username');
-            $table->text('content');
-            $table->boolean('status')->default(false);
+            $table->bigIncrements('id');
+            $table->unsignedBigInteger('sender_id');
+            $table->foreign('sender_id')
+                ->references('id')->on('users')->onDelete('cascade');
+            $table->unsignedBigInteger('conversation_id');
+            $table->foreign('conversation_id')
+                ->references('id')->on('conversation')->onDelete('cascade');
+            $table->enum('kind', ['text', 'video', 'audio', 'photo', 'document'])->default( 'text');
+            $table->string('content');
+            $table->string('effect')->default('');
+            $table->boolean('is_seen')->default(0);
             $table->timestamps();
         });
     }
