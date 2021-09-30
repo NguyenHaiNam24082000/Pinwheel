@@ -21,7 +21,6 @@ class CreateParticipantsTable extends Migration
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')
                     ->references('id')->on('users')->onDelete('cascade');
-            $table->enum('kind', ['friend', 'group'])->default( 'friend');
             $table->timestamps();
         });
     }

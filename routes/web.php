@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
 Route::get('{path?}', function () {
     return view('welcome');
 })->where('path', '[a-zA-Z0-9-/]+');

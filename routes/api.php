@@ -1,5 +1,8 @@
 <?php
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\ParticipantController;
+use App\Http\Controllers\ConversationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,3 +23,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('chat',[MessageController::class, 'index']);
 Route::post('chat/post',[MessageController::class, 'postSendMessage']);
+Route::post('user/post',[UserController::class, 'store']);
+Route::get('user/getInfo',[UserController::class, 'show']);
+Route::get('participant/getParticipant',[ParticipantController::class, 'show']);
+Route::get('conversation/getConversation',[ConversationController::class, 'show']);

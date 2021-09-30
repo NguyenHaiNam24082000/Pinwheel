@@ -1,12 +1,22 @@
 import React, { useRef, useEffect, useState } from "react";
-import { socket } from "../../context/socket";
+// import { socket } from "../../context/socket";
 import { FiPlus, FiMenu } from "react-icons/fi";
+import { getUserInfo } from "../../context/UserProvider";
+import TimeAgo from 'react-timeago';
+import { useModal } from "react-simple-modal-provider";
+import axios from "axios";
 
 export default function Contact() {
     const socketRef = useRef();
+    const [user,setUser]=useState({});
+    const { open: openModalAddFriend } = useModal("ModalAddFriend");
+    const { open: openModalStories } = useModal("ModalStories");
     const [mess, setMess] = useState("");
-
-    useEffect(() => {
+    const [participant,setParticipant]=useState({});
+    useEffect(async() => {
+        getUserInfo().then(res => setUser(res.data));
+        console.log('abx',user)
+        axios.get(`/api/participant/getParticipant/?userId:${user.id}`).then(res => console.log(res))
         // axios
         //     .get("/api/chat")
         //     .then(function (response) {
@@ -19,12 +29,12 @@ export default function Contact() {
         //         console.log(error);
         //     });
 
-        socketRef.current = socket;
+        // socketRef.current = socket;
 
-        socketRef.current.on("serverSendData", (dataGot) => {
-            setMess(dataGot.data);
-            //scrollToBottom();
-        });
+        // socketRef.current.on("serverSendData", (dataGot) => {
+        //     setMess(dataGot.data);
+        //     //scrollToBottom();
+        // });
 
         return () => {};
     }, []);
@@ -39,13 +49,13 @@ export default function Contact() {
             <div className="mb-5 mt-5 ml-2">
                 <ul className="inline-flex space-x-6">
                     <li className="flex flex-col items-center space-y-1">
-                        <div className="relative avatar">
-                            <div className="rounded-full w-16 h-16 ring ring-primary ring-offset-base-100 ring-offset-2">
-                                <img src="http://daisyui.com/tailwind-css-component-profile-1@94w.png" />
+                        <div className="relative avatar" >
+                            <div onClick={openModalStories} className="rounded-full w-16 h-16 ring ring-primary ring-offset-base-100 ring-offset-2">
+                                <img src={user.avatar} />
                             </div>
-                            <button className="absolute -bottom-1 -right-1  h-6 w-6 rounded-full text-white text-lg font-semibold border-2 flex justify-center items-center font-mono hover:bg-blue-700 bg-blue-500">+</button>
+                            <button className="absolute -bottom-1 -right-1  h-6 w-6 rounded-full text-base-content text-lg font-semibold border-2 flex justify-center items-center font-mono hover:bg-primary-focus bg-primary">+</button>
                         </div>
-                        <a href="#">you</a>
+                        <a href="#">You</a>
                     </li>
                     <li className="flex flex-col items-center space-y-1">
                         <div className="avatar">
@@ -104,7 +114,7 @@ export default function Contact() {
             <div className="flex flex-row justify-between">
                 <div>Last chats</div>
                 <div>
-                    <button className="btn btn-primary btn-square btn-sm mask mask-squircle mr-2">
+                    <button className="btn btn-primary btn-square btn-sm mask mask-squircle mr-2" onClick={openModalAddFriend}>
                         <FiPlus />
                     </button>
                     <button className="btn btn-primary btn-square btn-sm mask mask-squircle">
@@ -143,8 +153,8 @@ export default function Contact() {
                         <div className="truncate">{mess.content}</div>
                     </div>
 
-                    <div className="w-10 flex justify-center items-center">
-                        24:00
+                    <div className="w-10 flex justify-center items-center text-center text-sm">
+                        <TimeAgo date={1632837561300} />
                     </div>
                 </div>
                 <div className="flex items-center w-full p-5 hover:bg-base-200 rounded-box cursor-pointer">

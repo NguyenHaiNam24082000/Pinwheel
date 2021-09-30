@@ -1,23 +1,51 @@
 import React, { useState } from "react";
-import { FaFacebook, FaGoogle } from "react-icons/fa";
+import { FaFacebook } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
 import socialMediaAuth from "../context/Auth";
+import {postNewUser} from "../context/UserProvider";
 import ReCAPTCHA from "react-google-recaptcha";
-import { useHistory } from "react-router-dom";
-import { FacebookAuthProvider, GoogleAuthProvider } from "firebase/auth";
+import { FacebookAuthProvider, GoogleAuthProvider  } from "firebase/auth";
+import {useHistory} from "react-router-dom";
+const axios = require("axios").default;
 
 export default function Login() {
+    const history = useHistory();
     const facebookAuth = new FacebookAuthProvider();
     const googleAuth = new GoogleAuthProvider();
     const [checkReCAPTCHA, setCheckReCAPTCHA] = useState(false);
+    const [email,setEmail] = useState("");
+    const [password,setPassword] = useState("");
 
-    const history = useHistory();
     const handleOnClick = async (provider) => {
-        const res = await socialMediaAuth(provider);
-        console.log(res);
-        if (res) {
-            history.push("/");
+        const {additionalUserInfo,result} = await socialMediaAuth(provider);
+        if(additionalUserInfo.isNewUser)
+        {
+            postNewUser({
+                username: result.user.email,
+                email: result.user.email,
+                name: result.user.displayName,
+                avatar: result.user.photoURL,
+                password: "",
+                phone: result.user.phoneNumber,
+            })
+        }
+        else
+        { 
+            console.log("old user",result)
         }
     };
+
+    const onHandleSubmit = ()=>{
+
+    }
+
+    const onHandleChangeEmail = (e)=>{
+        setEmail(e.target.value);
+    }
+
+    const onHandleChangePassword = (e)=>{
+        setPassword(e.target.value);
+    }
 
     function onChangeReCAPTCHA(value) {
         console.log("Captcha value:", value);
@@ -45,7 +73,24 @@ export default function Login() {
                             … A place that makes it easy for you to have daily
                             conversations and meet more often.
                         </h2>
-                        <form className="flex flex-col">
+                        <div className="flex mb-5 mt-5 justify-center">
+                            <button
+                                className="btn btn-outline mr-5"
+                                onClick={() => handleOnClick(facebookAuth)}
+                            >
+                                <FaFacebook className="w-8 h-8 mr-3 cursor-pointer text-blue-500" />
+                                Login with Facebook
+                            </button>
+                            <button
+                                className="btn btn-outline"
+                                onClick={() => handleOnClick(googleAuth)}
+                            >
+                                <FcGoogle className="w-8 h-8 mr-3 cursor-pointer" />
+                                Login with Google
+                            </button>
+                        </div>
+                        <div className="divider">OR</div>
+                        <form className="flex flex-col" onSubmit={onHandleSubmit}>
                             <div className="form-control">
                                 <label className="label">
                                     <span className="label-text">
@@ -56,6 +101,8 @@ export default function Login() {
                                     type="text"
                                     placeholder="Username/Email"
                                     className="input input-bordered"
+                                    onChange={onHandleChangeEmail}
+                                    value={email}
                                 />
                                 <label className="label">
                                     <span className="label-text">
@@ -66,6 +113,8 @@ export default function Login() {
                                     type="password"
                                     placeholder="Password"
                                     className="input input-bordered"
+                                    onChange={onHandleChangePassword}
+                                    value={password}
                                 />
                                 <label className="label p-0 mt-3">
                                     <label className="label p-0">
@@ -81,23 +130,13 @@ export default function Login() {
                                         Forgot password ?
                                     </a>
                                 </label>
-                                <ReCAPTCHA
-                                    sitekey={`6Ldx2oAcAAAAAFjXik09xjzL1CeOlE8QfBl06dmX`}
-                                    onChange={onChangeReCAPTCHA}
-                                    className="mt-3"
-                                    theme="dark"
-                                />
-                            </div>
-                            <div className="divider">OR</div>
-                            <div className="flex mb-5 justify-center">
-                                <FaFacebook
-                                    className="w-8 h-8 mr-3 cursor-pointer"
-                                    onClick={() => handleOnClick(facebookAuth)}
-                                />
-                                <FaGoogle
-                                    className="w-8 h-8 cursor-pointer"
-                                    onClick={() => handleOnClick(googleAuth)}
-                                />
+                                <div className="flex justify-center items-center mt-3 mb-5">
+                                    <ReCAPTCHA
+                                        sitekey={`6Ldx2oAcAAAAAFjXik09xjzL1CeOlE8QfBl06dmX`}
+                                        onChange={onChangeReCAPTCHA}
+                                        theme="dark"
+                                    />
+                                </div>
                             </div>
                             <div className="flex justify-around">
                                 <button
@@ -107,18 +146,7 @@ export default function Login() {
                                 >
                                     Sign in
                                 </button>
-                                <button
-                                    className="
-                  p-4
-                  mb-4
-                  font-bold
-                  rounded-full
-                  text-sm
-                  lg:w-2/5
-                  text-black
-                  bg-white
-                "
-                                >
+                                <button className=" p-4 mb-4 font-bold rounded-full text-sm lg:w-2/5 text-black bg-white" onClick={()=>history.push("/register")}>
                                     Sign up
                                 </button>
                             </div>
@@ -252,46 +280,6 @@ export default function Login() {
                             Pinwheel © 2021
                         </a>
                     </li>
-                    {/* <li className="text-xs text-gray-500 mx-2 my-1">
-                        <a
-                            className="border-b-2 border-transparent hover:border-gray-400"
-                            href="/"
-                        >
-                            Twitter para empresas
-                        </a>
-                    </li>
-                    <li className="text-xs text-gray-500 mx-2 my-1">
-                        <a
-                            className="border-b-2 border-transparent hover:border-gray-400"
-                            href="/"
-                        >
-                            Desarrolladores
-                        </a>
-                    </li>
-                    <li className="text-xs text-gray-500 mx-2 my-1">
-                        <a
-                            className="border-b-2 border-transparent hover:border-gray-400"
-                            href="/"
-                        >
-                            Guía
-                        </a>
-                    </li>
-                    <li className="text-xs text-gray-500 mx-2 my-1">
-                        <a
-                            className="border-b-2 border-transparent hover:border-gray-400"
-                            href="/"
-                        >
-                            Configuración
-                        </a>
-                    </li>
-                    <li className="text-xs text-gray-500 mx-2 my-1">
-                        <a
-                            className="border-b-2 border-transparent hover:border-gray-400"
-                            href="/"
-                        >
-                            © 2021 Twitter, Inc.
-                        </a>
-                    </li> */}
                 </ul>
             </nav>
         </main>

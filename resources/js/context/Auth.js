@@ -1,12 +1,11 @@
 import {auth} from '../firebase';
-import {signInWithPopup } from "firebase/auth";
+import {signInWithPopup,getAdditionalUserInfo } from "firebase/auth";
 
 const socialMediaAuth = (provider) => {
     return signInWithPopup(auth, provider)
     .then((result) => {
-    //   const credential = provider.credentialFromResult(result);
-    //   const token = credential.accessToken;
-      return result.user;
+      const additionalUserInfo = getAdditionalUserInfo(result);
+      return {additionalUserInfo,result};
     }).catch((error) => {
       return error;
     });

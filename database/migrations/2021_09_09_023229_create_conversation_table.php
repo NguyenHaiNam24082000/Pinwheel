@@ -20,6 +20,7 @@ class CreateConversationTable extends Migration
                 ->references('id')->on('users')
                 ->onDelete('cascade');
             $table->string('title');
+            $table->enum('kind', ['friend', 'group'])->default( 'friend');
             $table->timestamps();
         });
     }

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback, useContext } from "react";
 import {
     FaPaperPlane,
     FaVideo,
@@ -16,7 +16,6 @@ import {
 } from "react-icons/io5";
 import { IoIosMic } from "react-icons/io";
 import { GiSoundWaves } from "react-icons/gi";
-import socketIOClient from "socket.io-client";
 import { Picker } from "emoji-mart";
 import "../../../css/font-effect.css";
 import "emoji-mart/css/emoji-mart.css";
@@ -27,8 +26,8 @@ import $ from "jquery";
 const reactStringReplace = require("react-string-replace");
 const axios = require("axios").default;
 import { socket } from "../../context/socket";
+import { getUserInfo } from "../../context/UserProvider";
 import Message from './Message';
-const host = "http://localhost:8000";
 const cors_api_url = "https://cryptic-headland-94862.herokuapp.com/";
 import SmoothList from 'react-smooth-list';
 
@@ -58,35 +57,34 @@ function Chat() {
         "😊",
         "🤩",
     ];
+    getUserInfo().then(function(result) {
+        console.log("abccbc",result) // "Some User token"
+     });
 
     useEffect(() => {
-        axios
-            .get("/api/chat")
-            .then(function (response) {
-                // handle success
-                setMess((oldMsgs) => [...oldMsgs, ...response.data.chat]);
-                scrollToBottom();
-                console.log(response);
-            })
-            .catch(function (error) {
-                // handle error
-                console.log(error);
-            });
+        // axios
+        //     .get("/api/chat")
+        //     .then(function (response) {
+        //         // handle success
+        //         setMess((oldMsgs) => [...oldMsgs, ...response.data.chat]);
+        //         scrollToBottom();
+        //         console.log(response);
+        //     })
+        //     .catch(function (error) {
+        //         // handle error
+        //         console.log(error);
+        //     });
 
-        socketRef.current = socket;
-
-        socketRef.current.on("getId", (data) => {
+        socket.on("getId", (data) => {
             setId(data);
         });
 
-        socketRef.current.on("serverSendData", (dataGot) => {
+        socket.on("serverSendData", (dataGot) => {
             setMess((oldMsgs) => [...oldMsgs, dataGot.data]);
             scrollToBottom();
         });
 
-        return () => {
-            socketRef.current.disconnect();
-        };
+        return () => {messagesEnd.current.clear();};
     }, []);
 
     const sendMessage = () => {
@@ -110,7 +108,7 @@ function Chat() {
                 username: "hainam",
                 content: message,
             });
-            socketRef.current.emit("clientSendData", msg);
+            socket.emit("clientSendData", msg);
             setMessage("");
         }
     };
@@ -129,7 +127,6 @@ function Chat() {
                 regexLink,
                 (match, i) => (
                     // <a key={match + i} href={match}>{match}</a>
-                    <>
                         <a
                             key={match + i}
                             href={`${
@@ -144,7 +141,6 @@ function Chat() {
                         >
                             {match}
                         </a>
-                    </>
                 )
             );
             return <>{replaceLink}</>;
@@ -182,9 +178,7 @@ function Chat() {
     }
 
     const renderMess = mess.map((m, index) => (
-        <>
-            <Message index={index} userId={id} messageId={m.id} effect={m.effect} content={m.content} CustomComponent={CustomComponent} normalizeContent={normalizeContent}/>
-        </>
+            <Message key={index} index={index} userId={id} messageId={m.id} effect={m.effect} content={m.content} CustomComponent={CustomComponent} normalizeContent={normalizeContent}/>
     ));
 
     const handleChange = (e) => {

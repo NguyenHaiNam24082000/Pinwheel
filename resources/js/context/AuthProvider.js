@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import { auth } from "../firebase";
 import Loading from "../components/Loading";
+import socketIOClient from "socket.io-client";
+const host = "http://localhost:8000";
+import { SocketContext,socket } from "../context/socket";
 
 export const AuthContext = React.createContext();
 
@@ -12,7 +15,9 @@ export default function AuthProvider({ children }) {
 
     React.useEffect(() => {
         const unsubscibed = auth.onAuthStateChanged((user) => {
+            setIsLoading(true);
             if (user) {
+                socket.connect();
                 const { displayName, email, uid, photoURL } = user;
                 setUser({
                     displayName,
@@ -29,8 +34,9 @@ export default function AuthProvider({ children }) {
             }
 
             // reset user info
-            setUser({});
             setTimeout(() => {
+                setUser({});
+                socket.disconnect();
                 setIsLoading(false);
                 history.push("/login");
             }, 2500);
@@ -47,7 +53,9 @@ export default function AuthProvider({ children }) {
             {isLoading ? (
                 <Loading style={{ position: "fixed", inset: 0 }} />
             ) : (
-                children
+                <SocketContext.Provider value={{socket}}>
+                {children}
+                </SocketContext.Provider>
             )}
         </AuthContext.Provider>
     );

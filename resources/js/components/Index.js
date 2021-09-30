@@ -3,13 +3,14 @@ import Sidebar from "./Sidebar";
 import ChatArea from "./ChatArea";
 import { Route, Switch, BrowserRouter } from "react-router-dom";
 import Login from "./Login";
+import Register from "./Register";
 import Avatar from "./Avatar";
 import VideoCall from "./VideoCall";
-import Loading from "./Loading";
-import Audio from "./Audio";
 import toast, { Toaster } from "react-hot-toast";
 import { BiWifiOff, BiWifi } from "react-icons/bi";
 import AuthProvider from "../context/AuthProvider";
+import modals from "./Modals";
+import { ModalProvider } from "react-simple-modal-provider";
 
 function Index() {
     let isOnline = true;
@@ -42,12 +43,14 @@ function Index() {
     }, []);
     const [theme, setTheme] = useState(localStorage.getItem("theme"));
 
-    const setThemeMode = () => {
-        toast.success(
-            `Successfully changed ${localStorage
-                .getItem("theme")
-                .toUpperCase()} theme!`
-        );
+    const setThemeMode = (themeMode) => {
+        var storageKey = "theme";
+        if (localStorage.getItem(storageKey) === null) {
+            localStorage.setItem(storageKey, "light");
+        } else {
+            localStorage.setItem(storageKey, themeMode);
+        }
+        toast.success(`Successfully changed ${themeMode} theme!`);
         setTheme(localStorage.getItem("theme"));
     };
 
@@ -118,27 +121,28 @@ function Index() {
         <BrowserRouter>
             <AuthProvider>
                 <Switch>
+                    <Route component={Register} path="/register" />
                     <Route component={Login} path="/login" />
                     <Route component={Avatar} path="/avatar" />
                     <Route component={VideoCall} path="/videocall" />
-                    <Route component={Audio} path="/audio" />
                     <Route exact path="/">
-                        <div
-                            className="w-full flex h-full bg-base-100 text-base-content"
-                            data-theme={theme}
-                        >
-                            <Sidebar
-                                setThemeMode={setThemeMode}
-                                theme={theme}
-                            />
-                            <ChatArea />
-                            <Toaster
-                                position="bottom-left"
-                                reverseOrder={false}
-                            />
-                        </div>
+                        <ModalProvider value={modals}>
+                            <div
+                                className="w-full flex h-full bg-base-100 text-base-content"
+                                data-theme={theme}
+                            >
+                                <Sidebar
+                                    setThemeMode={setThemeMode}
+                                    theme={theme}
+                                />
+                                <ChatArea />
+                                <Toaster
+                                    position="bottom-right"
+                                    reverseOrder={false}
+                                />
+                            </div>
+                        </ModalProvider>
                     </Route>
-                    <Route component={Loading} path="/loading" />
                 </Switch>
             </AuthProvider>
         </BrowserRouter>

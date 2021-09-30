@@ -1,8 +1,9 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Illuminate\support\Facades\Hash;
 use Illuminate\Http\Request;
+use App\Models\User;
 
 class UserController extends Controller
 {
@@ -35,6 +36,16 @@ class UserController extends Controller
     public function store(Request $request)
     {
         //
+        $user = User::create(["password"=>Hash::make($request->password),
+                "name"=>$request->name,
+                "username"=>$request->username,
+                "avatar"=>$request->avatar,
+                "email"=>$request->email,
+            ]);
+        return response()->json([
+            'user'=>$user,
+            'status' => 'success',
+        ]);
     }
 
     /**
@@ -43,9 +54,11 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request)
     {
         //
+        $user = User::where('email', $request->email)->first();
+        return $user;
     }
 
     /**
