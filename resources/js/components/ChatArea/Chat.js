@@ -26,7 +26,6 @@ import $ from "jquery";
 const reactStringReplace = require("react-string-replace");
 const axios = require("axios").default;
 import { socket } from "../../context/socket";
-import { getUserInfo } from "../../context/UserProvider";
 import Message from './Message';
 const cors_api_url = "https://cryptic-headland-94862.herokuapp.com/";
 import SmoothList from 'react-smooth-list';
@@ -57,9 +56,9 @@ function Chat() {
         "😊",
         "🤩",
     ];
-    getUserInfo().then(function(result) {
-        console.log("abccbc",result) // "Some User token"
-     });
+    // getUserInfo().then(function(result) {
+    //     console.log("abccbc",result) // "Some User token"
+    //  });
 
     useEffect(() => {
         // axios

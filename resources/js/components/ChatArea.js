@@ -12,7 +12,7 @@ export default function ChatArea() {
             className="flex flex-row h-full rounded-box border-l p-4"
             style={{ width: "calc(100% - 80px)" }}
         >
-            <Contact />
+            <Contact/>
             <Chat />
             <Detail />
         </div>

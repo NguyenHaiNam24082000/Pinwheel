@@ -8,7 +8,7 @@ import Avatar from "./Avatar";
 import VideoCall from "./VideoCall";
 import toast, { Toaster } from "react-hot-toast";
 import { BiWifiOff, BiWifi } from "react-icons/bi";
-import AuthProvider from "../context/AuthProvider";
+import AuthProvider, { AuthContext } from "../context/AuthProvider";
 import modals from "./Modals";
 import { ModalProvider } from "react-simple-modal-provider";
 
@@ -116,17 +116,16 @@ function Index() {
         "%cTruy cập http://127.0.0.1:8000/ để biết thêm thông tin.",
         "font-size: 32px;font-weight: bold; "
     );
-
     return (
         <BrowserRouter>
             <AuthProvider>
-                <Switch>
-                    <Route component={Register} path="/register" />
-                    <Route component={Login} path="/login" />
-                    <Route component={Avatar} path="/avatar" />
-                    <Route component={VideoCall} path="/videocall" />
-                    <Route exact path="/">
-                        <ModalProvider value={modals}>
+                <ModalProvider value={modals}>
+                    <Switch>
+                        <Route component={Register} path="/register" />
+                        <Route component={Login} path="/login" />
+                        <Route component={Avatar} path="/avatar" />
+                        <Route component={VideoCall} path="/videocall" />
+                        <Route exact path="/">
                             <div
                                 className="w-full flex h-full bg-base-100 text-base-content"
                                 data-theme={theme}
@@ -141,9 +140,9 @@ function Index() {
                                     reverseOrder={false}
                                 />
                             </div>
-                        </ModalProvider>
-                    </Route>
-                </Switch>
+                        </Route>
+                    </Switch>
+                </ModalProvider>
             </AuthProvider>
         </BrowserRouter>
     );

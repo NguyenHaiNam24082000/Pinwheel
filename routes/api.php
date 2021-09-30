@@ -3,6 +3,7 @@ use App\Http\Controllers\MessageController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ConversationController;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,3 +28,4 @@ Route::post('user/post',[UserController::class, 'store']);
 Route::get('user/getInfo',[UserController::class, 'show']);
 Route::get('participant/getParticipant',[ParticipantController::class, 'show']);
 Route::get('conversation/getConversation',[ConversationController::class, 'show']);
+Route::get('/getContact',[ConversationController::class, 'showContact']);

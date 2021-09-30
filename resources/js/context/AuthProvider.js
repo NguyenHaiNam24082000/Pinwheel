@@ -5,6 +5,7 @@ import Loading from "../components/Loading";
 import socketIOClient from "socket.io-client";
 const host = "http://localhost:8000";
 import { SocketContext,socket } from "../context/socket";
+import { getUserInfo } from './UserProvider';
 
 export const AuthContext = React.createContext();
 
@@ -14,17 +15,11 @@ export default function AuthProvider({ children }) {
     const [isLoading, setIsLoading] = useState(true);
 
     React.useEffect(() => {
-        const unsubscibed = auth.onAuthStateChanged((user) => {
+        const unsubscibed = auth.onAuthStateChanged((response) => {
             setIsLoading(true);
-            if (user) {
+            if (response) {
                 socket.connect();
-                const { displayName, email, uid, photoURL } = user;
-                setUser({
-                    displayName,
-                    email,
-                    uid,
-                    photoURL,
-                });
+                getUserInfo().then(res => setUser(res.data))
                 setTimeout(() => {
                     setIsLoading(false);
                     history.push("/");

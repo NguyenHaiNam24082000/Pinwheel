@@ -2,13 +2,8 @@ import React,{ useState,useEffect} from 'react';
 import { BsFileEarmark } from "react-icons/bs";
 import $ from 'jquery';
 import { OperationType } from '@firebase/auth';
-import { getUserInfo } from "../../context/UserProvider";
 
 export default function Detail() {
-    const [user,setUser]=useState({});
-    useEffect(() =>{
-        getUserInfo().then(res => setUser(res.data));
-    },[])
     const openTabChanel = () =>{
         $(".tab").toggleClass("tab-active");
         $(".tab-chanel").addClass("tab-active");

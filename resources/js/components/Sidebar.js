@@ -3,13 +3,10 @@ import "../../css/Sidebar.css";
 import { HiOutlineColorSwatch } from "react-icons/hi";
 import { IoLogOutOutline } from "react-icons/io5";
 import { auth } from "../firebase";
-import { getUserInfo } from "../context/UserProvider";
+import {AuthContext } from "../context/AuthProvider";
 
 function Sidebar({ theme, setThemeMode }) {
-    const [user,setUser]=useState({});
-    useEffect(() =>{
-        getUserInfo().then(res => setUser(res.data));
-    },[])
+    const {user}= React.useContext(AuthContext);
     const themeMode = [
         { title: "🌚  dark", theme: "dark" },
         { title: "🧁  cupcake", theme: "cupcake" },
