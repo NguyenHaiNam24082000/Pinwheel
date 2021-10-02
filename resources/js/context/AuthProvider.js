@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import { auth } from "../firebase";
 import Loading from "../components/Loading";
-import socketIOClient from "socket.io-client";
 const host = "http://localhost:8000";
 import { SocketContext,socket } from "../context/socket";
 import { getUserInfo } from './UserProvider';
@@ -18,7 +17,7 @@ export default function AuthProvider({ children }) {
         const unsubscibed = auth.onAuthStateChanged((response) => {
             setIsLoading(true);
             if (response) {
-                socket.connect();
+                socket.connect(host);
                 getUserInfo().then(res => setUser(res.data))
                 setTimeout(() => {
                     setIsLoading(false);

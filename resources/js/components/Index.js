@@ -8,7 +8,8 @@ import Avatar from "./Avatar";
 import VideoCall from "./VideoCall";
 import toast, { Toaster } from "react-hot-toast";
 import { BiWifiOff, BiWifi } from "react-icons/bi";
-import AuthProvider, { AuthContext } from "../context/AuthProvider";
+import AuthProvider from "../context/AuthProvider";
+import AppProvider from "../context/AppProvider";
 import modals from "./Modals";
 import { ModalProvider } from "react-simple-modal-provider";
 
@@ -119,30 +120,32 @@ function Index() {
     return (
         <BrowserRouter>
             <AuthProvider>
-                <ModalProvider value={modals}>
-                    <Switch>
-                        <Route component={Register} path="/register" />
-                        <Route component={Login} path="/login" />
-                        <Route component={Avatar} path="/avatar" />
-                        <Route component={VideoCall} path="/videocall" />
-                        <Route exact path="/">
-                            <div
-                                className="w-full flex h-full bg-base-100 text-base-content"
-                                data-theme={theme}
-                            >
-                                <Sidebar
-                                    setThemeMode={setThemeMode}
-                                    theme={theme}
-                                />
-                                <ChatArea />
-                                <Toaster
-                                    position="bottom-right"
-                                    reverseOrder={false}
-                                />
-                            </div>
-                        </Route>
-                    </Switch>
-                </ModalProvider>
+                <AppProvider>
+                    <ModalProvider value={modals}>
+                        <Switch>
+                            <Route component={Register} path="/register" />
+                            <Route component={Login} path="/login" />
+                            <Route component={Avatar} path="/avatar" />
+                            <Route component={VideoCall} path="/videocall" />
+                                <Route exact path="/">
+                                    <div
+                                        className="w-full flex h-full bg-base-100 text-base-content"
+                                        data-theme={theme}
+                                    >
+                                        <Sidebar
+                                            setThemeMode={setThemeMode}
+                                            theme={theme}
+                                        />
+                                        <ChatArea />
+                                        <Toaster
+                                            position="bottom-right"
+                                            reverseOrder={false}
+                                        />
+                                    </div>
+                                </Route>
+                        </Switch>
+                    </ModalProvider>
+                </AppProvider>
             </AuthProvider>
         </BrowserRouter>
     );

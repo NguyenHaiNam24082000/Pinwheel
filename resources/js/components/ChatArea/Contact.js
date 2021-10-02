@@ -1,31 +1,30 @@
 import React, { useRef, useEffect, useState } from "react";
-// import { socket } from "../../context/socket";
 import { FiPlus, FiMenu } from "react-icons/fi";
 import TimeAgo from "react-timeago";
 import { useModal } from "react-simple-modal-provider";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthProvider";
-
+import {AppContext} from "../../context/AppProvider";
 export default function Contact() {
-    const socketRef = useRef();
     // const [user,setUser]=useState({});
     const { open: openModalAddFriend } = useModal("ModalAddFriend");
     const { open: openModalStories } = useModal("ModalStories");
     const [mess, setMess] = useState("");
     const [participant, setParticipant] = useState([]);
     const { user } = React.useContext(AuthContext);
+    const { conversations,setSelectedConversationId } = React.useContext(AppContext);
     useEffect(() => {
         // getUserInfo().then(res => setUser(res.data));
-        axios
-            .get(`/api/getContact/?userId=${user.id}`)
-            .then((res) => {
-                console.log(res);
-                res.data.forEach((data) => {
-                    if(data.kind==='friend' && data.id!=user.id)
-                        setParticipant((participants) => [...participants,data])
-                })
+        // axios
+        //     .get(`/api/getContact/?userId=${user.id}`)
+        //     .then((res) => {
+        //         console.log(res);
+        //         res.data.forEach((data) => {
+        //             if(data.kind==='friend' && data.id!=user.id)
+        //                 setParticipant((participants) => [...participants,data])
+        //         })
                 
-            });
+        //     });
         
         // axios
         //     .get("/api/chat")
@@ -47,7 +46,6 @@ export default function Contact() {
         // });
         return () => {};
     }, []);
-    console.log(participant);
     return (
         <div className="flex flex-col mr-4 w-3/12 h-full rounded-box">
             <div
@@ -141,9 +139,9 @@ export default function Contact() {
                 </div>
             </div>
             <div className="flex flex-col w-full mt-2 overflow-y-auto">
-                {participant &&
-                    participant.map((value, index) => (
-                        <div key={index+value} className="flex items-center w-full p-5 hover:bg-base-200 rounded-box cursor-pointer">
+                {conversations &&
+                    conversations.map((value, index) => (
+                        <div key={index+value} className="flex items-center w-full p-5 hover:bg-base-200 rounded-box cursor-pointer" onClick={()=>setSelectedConversationId(value.conversationId)}>
                             <div className="avatar online w-12 flex justify-center align-center mr-3">
                                 <div className="rounded-full w-12 h-12">
                                     <img src={value.avatar} />

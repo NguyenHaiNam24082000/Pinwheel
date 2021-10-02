@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback, useContext } from "react";
+import React, {
+    useState,
+    useRef,
+    useEffect,
+    useCallback,
+    useContext,
+} from "react";
 import {
     FaPaperPlane,
     FaVideo,
@@ -25,19 +31,23 @@ import ContentLoader from "react-content-loader";
 import $ from "jquery";
 const reactStringReplace = require("react-string-replace");
 const axios = require("axios").default;
-import { socket } from "../../context/socket";
-import Message from './Message';
-const cors_api_url = "https://cryptic-headland-94862.herokuapp.com/";
-import SmoothList from 'react-smooth-list';
+import { SocketContext } from "../../context/socket";
+import Message from "./Message";
+import SmoothList from "react-smooth-list";
+import { AppContext } from "../../context/AppProvider";
+import { AuthContext } from "../../context/AuthProvider";
 
 function Chat() {
+    const { conversations, selectedConversation, selectedConversationId } =
+        useContext(AppContext);
+    const { user } = useContext(AuthContext);
+    const { socket } = useContext(SocketContext);
     const [showEmoji, setShowEmoji] = useState(false);
     const [mess, setMess] = useState([]);
     const [message, setMessage] = useState("");
     const [file, setFile] = useState();
     const [effect, setEffect] = useState("");
-    const [id, setId] = useState("");
-    const socketRef = useRef();
+    const [typing,setTyping]= useState("");
     const messagesEnd = useRef();
     const [play, setPlay] = useState(false);
     const emojiList = [
@@ -56,9 +66,27 @@ function Chat() {
         "😊",
         "🤩",
     ];
-    // getUserInfo().then(function(result) {
-    //     console.log("abccbc",result) // "Some User token"
-    //  });
+
+    useEffect(() => {
+        // socket.emit("online",user)
+        // socket.on("getUsers", (data) => {
+        //     console.log("Hello",data)
+        // });
+        socket.on("serverSendData", (dataGot) => {
+            console.log("datagot", dataGot);
+            setMess((oldMsgs) => [...oldMsgs, dataGot.data]);
+            scrollToBottom();
+        });
+
+        socket.on("serverFocusInput",(s)=>{
+            setTyping(s);
+        })
+
+        socket.on("serverBlurInput",()=>{
+            setTyping("");
+        })
+        return () => {};
+    }, []);
 
     useEffect(() => {
         // axios
@@ -73,18 +101,11 @@ function Chat() {
         //         // handle error
         //         console.log(error);
         //     });
-
-        socket.on("getId", (data) => {
-            setId(data);
-        });
-
-        socket.on("serverSendData", (dataGot) => {
-            setMess((oldMsgs) => [...oldMsgs, dataGot.data]);
-            scrollToBottom();
-        });
-
-        return () => {messagesEnd.current.clear();};
-    }, []);
+        setMess([]);
+        const data = { ...user, selectedConversationId };
+        socket.emit("joinConversation", data);
+        return () => {};
+    }, [conversations, selectedConversationId]);
 
     const sendMessage = () => {
         if (message !== null && message.length !== 0) {
@@ -101,12 +122,11 @@ function Chat() {
             const msg = {
                 effect: effect,
                 content: message,
-                id: id,
             };
-            axios.post("/api/chat/post", {
-                username: "hainam",
-                content: message,
-            });
+            // axios.post("/api/chat/post", {
+            //     username: "hainam",
+            //     content: message,
+            // });
             socket.emit("clientSendData", msg);
             setMessage("");
         }
@@ -126,20 +146,18 @@ function Chat() {
                 regexLink,
                 (match, i) => (
                     // <a key={match + i} href={match}>{match}</a>
-                        <a
-                            key={match + i}
-                            href={`${
-                                match.includes("http")
-                                    ? match
-                                    : `https://${match}`
-                            }`}
-                            target="_blank"
-                            title=""
-                            className="hover:underline text-info"
-                            style={{ cursor: "pointer" }}
-                        >
-                            {match}
-                        </a>
+                    <a
+                        key={match + i}
+                        href={`${
+                            match.includes("http") ? match : `https://${match}`
+                        }`}
+                        target="_blank"
+                        title=""
+                        className="hover:underline text-info"
+                        style={{ cursor: "pointer" }}
+                    >
+                        {match}
+                    </a>
                 )
             );
             return <>{replaceLink}</>;
@@ -177,7 +195,18 @@ function Chat() {
     }
 
     const renderMess = mess.map((m, index) => (
-            <Message key={index} index={index} userId={id} messageId={m.id} effect={m.effect} content={m.content} CustomComponent={CustomComponent} normalizeContent={normalizeContent}/>
+        <Message
+            key={index}
+            index={index}
+            userId={user.id}
+            messageId={m.id}
+            effect={m.effect}
+            content={m.content}
+            avatar={m.avatar}
+            name={m.name}
+            CustomComponent={CustomComponent}
+            normalizeContent={normalizeContent}
+        />
     ));
 
     const handleChange = (e) => {
@@ -269,6 +298,14 @@ function Chat() {
             }
         }
     };
+    
+    const onFocusInput = ()=>{
+        socket.emit("focusInput");
+    }
+
+    const onBlurInput = ()=>{
+        socket.emit("blurInput")
+    }
 
     return (
         <div
@@ -329,7 +366,16 @@ function Chat() {
                         borderTopRightRadius: "var(--rounded-box,1rem)",
                     }}
                 >
-                    <div className="ml-4 font-bold text-black">CNTT4K59</div>
+                    <div className="ml-4 font-bold text-black flex items-center">
+                        <div className="avatar online mr-3">
+                            <div className="rounded-full w-10 h-10">
+                                <img src={selectedConversation.avatar} />
+                            </div>
+                        </div>
+                        {selectedConversation.kind === "friend"
+                            ? selectedConversation.alias
+                            : selectedConversation.title}
+                    </div>
                     <div className="-space-x-5 avatar-group mr-4">
                         <button
                             className="btn btn-primary btn-square mask mask-squircle justify-center items-center"
@@ -343,15 +389,26 @@ function Chat() {
                     </div>
                 </div>
             </div>
-            <SmoothList className="flex flex-col w-full h-full overflow-y-auto mt-16">
+            <SmoothList
+                transitionDuration={1000}
+                className="flex flex-col w-full h-full overflow-y-auto mt-16"
+            >
                 {renderMess}
                 <div
                     style={{ float: "left", clear: "both" }}
                     ref={messagesEnd}
                 ></div>
             </SmoothList>
+            <div className="flex mx-5">
+                {typing && <><div className="typing ">
+                    <span className="circle scaling bg-primary"></span>
+                    <span className="circle scaling bg-primary"></span>
+                    <span className="circle scaling bg-primary"></span>
+                </div>
+                {typing} ...</>}
+            </div>
             <div
-                className="flex flex-col h-auto rounded-box bg-base-300 m-4 items-center"
+                className="flex flex-col h-auto rounded-box bg-base-300 mx-4 mb-4 items-center"
                 style={{ width: "calc(100% - 32px)" }}
             >
                 {/* <div className="w-10 h-14 flex justify-center items-center ml-3">
@@ -467,7 +524,7 @@ function Chat() {
                         >
                             <li>
                                 <a href="/login">
-                                    <IoFolderOpen className="mr-2"  />
+                                    <IoFolderOpen className="mr-2" />
                                     Chọn từ tập tin
                                 </a>
                             </li>
@@ -498,6 +555,8 @@ function Chat() {
                             <input
                                 value={message}
                                 onKeyDown={onEnterPress}
+                                onFocus={onFocusInput}
+                                onBlur={onBlurInput}
                                 onChange={handleChange}
                                 type="text"
                                 placeholder="Abc..."

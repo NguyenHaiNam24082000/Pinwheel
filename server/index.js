@@ -1,23 +1,22 @@
-var express = require('express')
+var express = require("express");
 const http = require("http");
-const { io } = require('socket.io-client');
+const { io } = require("socket.io-client");
 var app = express();
 const server = http.createServer(app);
 
 const socketIo = require("socket.io")(server, {
     cors: {
         origin: "*",
-    }
+    },
 });
-let users = [];
+let users = {};
 
-const addUser = (userId, socketId) => {
-  !users.some((user) => user.userId === userId) &&
-    users.push({ userId, socketId });
+const addUser = (user, socketId) => {
+    users[socketId]=user ;
 };
 
 const removeUser = (socketId) => {
-  users = users.filter((user) => user.socketId !== socketId);
+    delete users[socketId];
 };
 
 // const Redis = require("ioredis");
@@ -33,35 +32,56 @@ const removeUser = (socketId) => {
 // })
 
 socketIo.on("connection", (socket) => {
-  console.log("New client connected" + socket.id);
+    console.log("New client connected " + socket.id);
 
-  socket.emit("getId", socket.id);
-  socket.on("addUser",(userId)=>{
-      addUser(userId, socket.id);
-      socketIo.emit("getUsers",users);
-  });
+    // socket.on("online", (user) => {
+    //     addUser(user, socket.id);
+    //     console.log(user.id)
+    //     socketIo.emit("getUsers", users);
+    // });
 
-  socket.on("clientSendData", function(data) {
-    const user = getUser()
-    console.log(data)
-    socketIo.emit("serverSendData", { data });
-  })
+    socket.on("joinConversation",(data) => {
+        addUser(data,socket.id)
+        const user = users[socket.id];
+        socket.room= user.selectedConversationId.toString();
+        socket.join(user.selectedConversationId.toString());
+    })
 
-  // socket.on("typing", function(data) {
-  //   console.log(data)
-  //   socketIo.emit("typingServer", { data });
-  // })
+    socket.on("clientSendData", function (data) {
+        const user = users[socket.id];
+        data={
+            ...user,
+            ...data
+        }
+        socketIo.sockets.in(socket.room).emit("serverSendData", { data });
+    });
 
-  // socket.on("stopTyping", function(data) {
-  //   console.log(data)
-  //   socketIo.emit("stopTypingServer",{data});
-  // })
+    socket.on("focusInput",()=>{
+        const user = users[socket.id];
+        const s=`${user.name} is typing`;
+        socket.to(socket.room).emit("serverFocusInput",s);
+    });
 
-  socket.on("disconnect", () => {
-    console.log("Client disconnected");
-  });
+    socket.on("blurInput",()=>{
+        socket.to(socket.room).emit("serverBlurInput");
+    });
+
+    // socket.on("typing", function(data) {
+    //   console.log(data)
+    //   socketIo.emit("typingServer", { data });
+    // })
+
+    // socket.on("stopTyping", function(data) {
+    //   console.log(data)
+    //   socketIo.emit("stopTypingServer",{data});
+    // })
+
+    socket.on("disconnect", () => {
+        removeUser(socket.id)
+        console.log("Client disconnected");
+    });
 });
 
 server.listen(8000, () => {
-    console.log('Server đang chay tren cong 8000');
+    console.log("Server đang chay tren cong 8000");
 });

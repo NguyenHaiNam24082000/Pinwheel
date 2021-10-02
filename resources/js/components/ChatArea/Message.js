@@ -10,6 +10,8 @@ export default function Message({
     content,
     CustomComponent,
     normalizeContent,
+    avatar,
+    name,
 }) {
     return (
         <div
@@ -21,7 +23,7 @@ export default function Message({
         >
             <div className="avatar mr-3">
                 <div className="w-12 h-12 mask mask-squircle">
-                    <img src="https://scontent.fhan5-4.fna.fbcdn.net/v/t1.6435-9/62498267_1122772321257230_1257182363998224384_n.jpg?_nc_cat=104&ccb=1-5&_nc_sid=09cbfe&_nc_ohc=fCfCkv9GMpYAX-5XEzu&_nc_ht=scontent.fhan5-4.fna&oh=8c591abd1ca6feb8e2f44f1acf183c5d&oe=615B52A1" />
+                    <img src={avatar} />
                 </div>
             </div>
             <div
@@ -29,7 +31,7 @@ export default function Message({
                 style={{ width: "calc(100% - 72px)" }}
             >
                 <div className="flex justify-between w-full">
-                    <div className="font-bold w-full">Nguyễn Hải Nam</div>
+                    <div className="font-bold w-full">{name}</div>
                     <div>24:00</div>
                 </div>
                 <div className={effect}>

@@ -2,8 +2,10 @@ import React,{ useState,useEffect} from 'react';
 import { BsFileEarmark } from "react-icons/bs";
 import $ from 'jquery';
 import { OperationType } from '@firebase/auth';
+import {AppContext} from "../../context/AppProvider";
 
 export default function Detail() {
+    const { conversations,selectedConversation } = React.useContext(AppContext);
     const openTabChanel = () =>{
         $(".tab").toggleClass("tab-active");
         $(".tab-chanel").addClass("tab-active");
@@ -31,10 +33,10 @@ export default function Detail() {
                     <div className="flex flex-col items-center mb-5">
                         <div className="avatar online mt-6 mb-5">
                             <div className="w-20 h-20 mask mask-squircle">
-                                <img src="http://daisyui.com/tailwind-css-component-profile-1@94w.png" />
+                                <img src={selectedConversation.avatar} />
                             </div>
                         </div>
-                        <h3 className="text-xl">Test Group</h3>
+                        <h3 className="text-xl">{selectedConversation.kind==='friend'?selectedConversation.alias:selectedConversation.title}</h3>
                     </div>
                     <div className="form-control mb-5">
                         <div className="relative">
