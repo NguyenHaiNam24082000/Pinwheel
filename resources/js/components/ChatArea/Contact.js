@@ -4,16 +4,32 @@ import TimeAgo from "react-timeago";
 import { useModal } from "react-simple-modal-provider";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthProvider";
-import {AppContext} from "../../context/AppProvider";
+import { AppContext } from "../../context/AppProvider";
+import { SocketContext } from "../../context/socket";
+
 export default function Contact() {
     // const [user,setUser]=useState({});
+    const { socket } = React.useContext(SocketContext);
     const { open: openModalAddFriend } = useModal("ModalAddFriend");
     const { open: openModalStories } = useModal("ModalStories");
     const [mess, setMess] = useState("");
-    const [participant, setParticipant] = useState([]);
+    const [lastMessage, setLastMessage] = useState({});
+    const [typing, setTyping] = useState("");
     const { user } = React.useContext(AuthContext);
-    const { conversations,setSelectedConversationId } = React.useContext(AppContext);
+    const { conversations, setSelectedConversationId } =
+        React.useContext(AppContext);
     useEffect(() => {
+        socket.on("serverSendLastData",(dataGot)=>{
+            setLastMessage(dataGot.data);
+        });
+
+        socket.on("serverFocusTyping", (s) => {
+            setTyping(s);
+        });
+
+        socket.on("serverBlurTyping", () => {
+            setTyping("");
+        });
         // getUserInfo().then(res => setUser(res.data));
         // axios
         //     .get(`/api/getContact/?userId=${user.id}`)
@@ -23,9 +39,9 @@ export default function Contact() {
         //             if(data.kind==='friend' && data.id!=user.id)
         //                 setParticipant((participants) => [...participants,data])
         //         })
-                
+
         //     });
-        
+
         // axios
         //     .get("/api/chat")
         //     .then(function (response) {
@@ -46,6 +62,7 @@ export default function Contact() {
         // });
         return () => {};
     }, []);
+    console.log("con",lastMessage);
     return (
         <div className="flex flex-col mr-4 w-3/12 h-full rounded-box">
             <div
@@ -141,16 +158,37 @@ export default function Contact() {
             <div className="flex flex-col w-full mt-2 overflow-y-auto">
                 {conversations &&
                     conversations.map((value, index) => (
-                        <div key={index+value} className="flex items-center w-full p-5 hover:bg-base-200 rounded-box cursor-pointer" onClick={()=>setSelectedConversationId(value.conversationId)}>
-                            <div className="avatar online w-12 flex justify-center align-center mr-3">
+                        <div
+                            key={index + value}
+                            className="flex items-center w-full p-5 hover:bg-base-200 rounded-box cursor-pointer"
+                            onClick={() =>
+                                setSelectedConversationId(value.conversationId)
+                            }
+                        >
+                            <div className="avatar online w-12 flex justify-center align-center mr-3 indicator">
+                            {typing===`${value.conversationId}` && (
+                                <div className="indicator-item badge indicator-bottom flex align-center p-0 h-5 w-8 bg-primary border-2 border-base-100"
+                                    style={{bottom:"8px",left:"3px"}}
+                                >
+                                    <div className="typing flex align-center w-full h-full" style={{margin: "0px"}}>
+                                        <span className="circle scaling bg-white" style={{width: "6px",height:"6px",margin:"2px"}}></span>
+                                        <span className="circle scaling bg-white" style={{width: "6px",height:"6px",margin:"2px"}}></span>
+                                        <span className="circle scaling bg-white" style={{width: "6px",height:"6px",margin:"2px"}}></span>
+                                    </div>
+                                </div>)
+                            }
                                 <div className="rounded-full w-12 h-12">
                                     <img src={value.avatar} />
                                 </div>
                             </div>
 
                             <div className="flex flex-col w-full truncate overflow-ellipsis">
-                                <div className="truncate font-bold">{value.kind==='friend'?value.alias:value.title}</div>
-                                <div className="truncate">{mess.content}</div>
+                                <div className="truncate font-bold">
+                                    {value.kind === "friend"
+                                        ? value.alias
+                                        : value.title}
+                                </div>
+                                <div className="truncate">{lastMessage.selectedConversationId===value.conversationId? lastMessage.id===user.id? `You: ${lastMessage.content}`: lastMessage.content:""}</div>
                             </div>
 
                             <div className="w-10 flex justify-center items-center text-center text-sm">

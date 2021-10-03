@@ -47,7 +47,7 @@ function Chat() {
     const [message, setMessage] = useState("");
     const [file, setFile] = useState();
     const [effect, setEffect] = useState("");
-    const [typing,setTyping]= useState("");
+    const [typing, setTyping] = useState("");
     const messagesEnd = useRef();
     const [play, setPlay] = useState(false);
     const emojiList = [
@@ -78,13 +78,13 @@ function Chat() {
             scrollToBottom();
         });
 
-        socket.on("serverFocusInput",(s)=>{
+        socket.on("serverFocusInput", (s) => {
             setTyping(s);
-        })
+        });
 
-        socket.on("serverBlurInput",()=>{
+        socket.on("serverBlurInput", () => {
             setTyping("");
-        })
+        });
         return () => {};
     }, []);
 
@@ -195,18 +195,19 @@ function Chat() {
     }
 
     const renderMess = mess.map((m, index) => (
-        <Message
-            key={index}
-            index={index}
-            userId={user.id}
-            messageId={m.id}
-            effect={m.effect}
-            content={m.content}
-            avatar={m.avatar}
-            name={m.name}
-            CustomComponent={CustomComponent}
-            normalizeContent={normalizeContent}
-        />
+        <SmoothList key={index}>
+            <Message
+                index={index}
+                userId={user.id}
+                messageId={m.id}
+                effect={m.effect}
+                content={m.content}
+                avatar={m.avatar}
+                name={m.name}
+                CustomComponent={CustomComponent}
+                normalizeContent={normalizeContent}
+            />
+        </SmoothList>
     ));
 
     const handleChange = (e) => {
@@ -298,14 +299,14 @@ function Chat() {
             }
         }
     };
-    
-    const onFocusInput = ()=>{
-        socket.emit("focusInput");
-    }
 
-    const onBlurInput = ()=>{
-        socket.emit("blurInput")
-    }
+    const onFocusInput = () => {
+        socket.emit("focusInput");
+    };
+
+    const onBlurInput = () => {
+        socket.emit("blurInput");
+    };
 
     return (
         <div
@@ -389,26 +390,27 @@ function Chat() {
                     </div>
                 </div>
             </div>
-            <SmoothList
-                transitionDuration={1000}
-                className="flex flex-col w-full h-full overflow-y-auto mt-16"
-            >
+            <div className="flex flex-col w-full h-full overflow-y-auto mt-16">
                 {renderMess}
                 <div
                     style={{ float: "left", clear: "both" }}
                     ref={messagesEnd}
                 ></div>
-            </SmoothList>
+            </div>
             <div className="flex mx-5">
-                {typing && <><div className="typing ">
-                    <span className="circle scaling bg-primary"></span>
-                    <span className="circle scaling bg-primary"></span>
-                    <span className="circle scaling bg-primary"></span>
-                </div>
-                {typing} ...</>}
+                {typing && (
+                    <>
+                        <div className="typing ">
+                            <span className="circle scaling bg-primary"></span>
+                            <span className="circle scaling bg-primary"></span>
+                            <span className="circle scaling bg-primary"></span>
+                        </div>
+                        {typing} ...
+                    </>
+                )}
             </div>
             <div
-                className="flex flex-col h-auto rounded-box bg-base-300 mx-4 mb-4 items-center"
+                className={`flex flex-col h-auto rounded-box bg-base-300 ${typing===''? 'm-4' : 'mx-4 mb-4'} items-center`}
                 style={{ width: "calc(100% - 32px)" }}
             >
                 {/* <div className="w-10 h-14 flex justify-center items-center ml-3">

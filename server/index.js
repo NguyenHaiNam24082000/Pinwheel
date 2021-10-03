@@ -53,30 +53,25 @@ socketIo.on("connection", (socket) => {
             ...user,
             ...data
         }
+        socketIo.sockets.emit("serverSendLastData",{data});
         socketIo.sockets.in(socket.room).emit("serverSendData", { data });
     });
 
     socket.on("focusInput",()=>{
         const user = users[socket.id];
         const s=`${user.name} is typing`;
+        socket.broadcast.emit("serverFocusTyping",socket.room);
         socket.to(socket.room).emit("serverFocusInput",s);
     });
 
     socket.on("blurInput",()=>{
+        socket.broadcast.emit("serverBlurTyping");
         socket.to(socket.room).emit("serverBlurInput");
     });
 
-    // socket.on("typing", function(data) {
-    //   console.log(data)
-    //   socketIo.emit("typingServer", { data });
-    // })
-
-    // socket.on("stopTyping", function(data) {
-    //   console.log(data)
-    //   socketIo.emit("stopTypingServer",{data});
-    // })
-
     socket.on("disconnect", () => {
+        socket.broadcast.emit("serverBlurTyping");
+        socket.to(socket.room).emit("serverBlurInput");
         removeUser(socket.id)
         console.log("Client disconnected");
     });
