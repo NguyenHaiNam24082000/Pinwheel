@@ -390,7 +390,7 @@ function Chat() {
                     </div>
                 </div>
             </div>
-            <div className="flex flex-col w-full h-full overflow-y-auto mt-16">
+            <div className="flex flex-col w-full h-full overflow-y-auto mt-16 overflow-x-hidden">
                 {renderMess}
                 <div
                     style={{ float: "left", clear: "both" }}

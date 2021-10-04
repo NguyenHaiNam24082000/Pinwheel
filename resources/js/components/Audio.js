@@ -20,9 +20,9 @@ function Audio() {
     };
     const preload = (p5) => {
         let href=window.location.href.toLowerCase();
-        let music= href.split("?audio=")[1]
-        console.log(music);
-        song = p5.loadSound(`../../assets/sounds/music/${music}`);
+        // let music= href.split("?audio=")[1]
+        // console.log(music);
+        song = p5.loadSound(`../../assets/sounds/music/cat-walk.mp3`);
         img=p5.loadImage(`../../images/background/bg_${p5.round(p5.random(0.5,2))}.png`);
         console.log(song);
     };

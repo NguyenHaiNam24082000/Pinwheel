@@ -59,7 +59,8 @@ socketIo.on("connection", (socket) => {
 
     socket.on("focusInput",()=>{
         const user = users[socket.id];
-        const s=`${user.name} is typing`;
+        // const s=`${user.name} is typing`;
+        const s="Typing";
         socket.broadcast.emit("serverFocusTyping",socket.room);
         socket.to(socket.room).emit("serverFocusInput",s);
     });

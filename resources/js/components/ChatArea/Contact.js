@@ -71,7 +71,7 @@ export default function Contact() {
             >
                 Chat
             </div>
-            <div className="mb-5 mt-5 ml-2">
+            <div className="mb-5 mt-5 overflow-x-hidden p-2">
                 <ul className="inline-flex space-x-6">
                     <li className="flex flex-col items-center space-y-1">
                         <div className="relative avatar">
