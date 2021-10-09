@@ -4,7 +4,7 @@ import ChatArea from "./ChatArea";
 import { Route, Switch, BrowserRouter } from "react-router-dom";
 import Login from "./Login";
 import Register from "./Register";
-import Avatar from "./Avatar";
+import AvatarMaker from "./Avatar";
 import VideoCall from "./VideoCall";
 import toast, { Toaster } from "react-hot-toast";
 import { BiWifiOff, BiWifi } from "react-icons/bi";
@@ -12,6 +12,7 @@ import AuthProvider from "../context/AuthProvider";
 import AppProvider from "../context/AppProvider";
 import modals from "./Modals";
 import { ModalProvider } from "react-simple-modal-provider";
+import PaintChanel from "./ChatArea/PaintChanel";
 
 function Index() {
     let isOnline = true;
@@ -125,7 +126,8 @@ function Index() {
                         <Switch>
                             <Route component={Register} path="/register" />
                             <Route component={Login} path="/login" />
-                            <Route component={Avatar} path="/avatar" />
+                            <Route component={AvatarMaker} path="/avatar" />
+                            <Route component={PaintChanel} path="/paint" />
                             <Route component={VideoCall} path="/videocall" />
                                 <Route exact path="/">
                                     <div
@@ -138,7 +140,7 @@ function Index() {
                                         />
                                         <ChatArea />
                                         <Toaster
-                                            position="bottom-right"
+                                            position="top-center"
                                             reverseOrder={false}
                                         />
                                     </div>

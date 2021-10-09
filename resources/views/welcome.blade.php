@@ -6,6 +6,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>Pinwheel</title>
+        <meta data-n-head="ssr" data-hid="og:image" property="og:image" content="https://daisyui.com/card.png">
+        <meta data-n-head="ssr" data-hid="og:title" property="og:title" content="Tailwind CSS Components">
+        <meta data-n-head="ssr" data-hid="og:url" property="og:url" content="https://daisyui.com">
+        <meta data-n-head="ssr" data-hid="og:description" property="og:description" content="Tailwind CSS Components plugin — daisyUI tailwind component library">
         <link rel="icon" href="../images/logo.svg">
         <!-- Fonts -->
         <link href="https://fonts.googleapis.com/css?family=Nunito:wght@400;600;700&display=swap&effect=shadow-multiple|emboss|fire|neon|outline|3d|3d-float|anaglyph" rel="stylesheet">

@@ -21,7 +21,7 @@ export default function AuthProvider({ children }) {
                 getUserInfo().then(res => setUser(res.data))
                 setTimeout(() => {
                     setIsLoading(false);
-                    history.push("/");
+                    // history.push("/");
                 }, 2500);
                 console.log(user);
                 return;

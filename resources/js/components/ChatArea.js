@@ -40,22 +40,22 @@ export default function ChatArea() {
             $(".page").attr("class", "page bot-" + el);
         });
         return ()=>{};
-    },[]);
+    },[selectedConversationId]);
 
     return (
         <div
-            className="flex flex-row h-full rounded-box border-l p-4"
+            className="flex flex-row h-full rounded-box border-l p-4 drawer drawer-mobile"
             style={{ width: "calc(100% - 80px)" }}
         >
-            <Contact />
+            <Contact/>
             {selectedConversationId !== "" ? (
                 <>
-                    <Chat />
-                    <Detail />
+                    <Chat/>
+                    <Detail/>
                 </>
             ) : (
                 <div
-                    className="flex flex-col justify-center items-end bg-base-200 w-9/12 h-full rounded-box relative"
+                    className="flex flex-col justify-center items-end bg-base-200 w-9/12 h-full rounded-box relative drawer-content"
                     style={{
                         backgroundSize: "cover",
                         backgroundRepeat: "no-repeat",

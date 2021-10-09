@@ -33,6 +33,7 @@ export default function Login() {
         { 
             console.log("old user",result)
         }
+        history.push("/");
     };
 
     const onHandleSubmit = ()=>{

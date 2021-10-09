@@ -26,10 +26,7 @@ import { Picker } from "emoji-mart";
 import "../../../css/font-effect.css";
 import "emoji-mart/css/emoji-mart.css";
 import { Howl, Howler } from "howler";
-import "@ashwamegh/react-link-preview/dist/index.css";
-import ContentLoader from "react-content-loader";
 import $ from "jquery";
-const reactStringReplace = require("react-string-replace");
 const axios = require("axios").default;
 import { SocketContext } from "../../context/socket";
 import Message from "./Message";
@@ -136,76 +133,16 @@ function Chat() {
         messagesEnd.current.scrollIntoView({ behavior: "smooth" });
     };
 
-    const normalizeContent = useCallback((content) => {
-        const regexLink = /(https?:\/\/\S+)/g;
-        let links = "";
-        links = content.match(regexLink);
-        if (links !== null) {
-            let replaceLink = reactStringReplace(
-                content,
-                regexLink,
-                (match, i) => (
-                    // <a key={match + i} href={match}>{match}</a>
-                    <a
-                        key={match + i}
-                        href={`${
-                            match.includes("http") ? match : `https://${match}`
-                        }`}
-                        target="_blank"
-                        title=""
-                        className="hover:underline text-info"
-                        style={{ cursor: "pointer" }}
-                    >
-                        {match}
-                    </a>
-                )
-            );
-            return <>{replaceLink}</>;
-        } else return <>{content}</>;
-    });
-
-    function CustomComponent({ loading, preview }) {
-        return loading ? (
-            <ContentLoader viewBox="0 0 500 280" height={280} width={500}>
-                <rect x="3" y="3" rx="10" ry="10" width="300" height="180" />
-                <rect x="6" y="190" rx="0" ry="0" width="292" height="20" />
-                <rect x="4" y="215" rx="0" ry="0" width="239" height="20" />
-                <rect x="4" y="242" rx="0" ry="0" width="274" height="20" />
-            </ContentLoader>
-        ) : (
-            <a
-                className="flex flex-col rounded-box w-full mt-3 border cursor-pointer"
-                target="_blank"
-                href={
-                    preview.domain.includes("http")
-                        ? preview.domain
-                        : `http://${preview.domain}`
-                }
-            >
-                <img
-                    className="w-full h-auto rounded-t-box"
-                    src={preview.img}
-                    alt={preview.title}
-                />
-                <h3 className="text-xl font-bold mt-2 pl-3">{preview.title}</h3>
-                <p className="pl-3">{preview.description}</p>
-                <p className="mb-2 pl-3">{preview.domain}</p>
-            </a>
-        );
-    }
 
     const renderMess = mess.map((m, index) => (
-        <SmoothList key={index}>
+        <SmoothList key={index+user.id}>
             <Message
-                index={index}
                 userId={user.id}
                 messageId={m.id}
                 effect={m.effect}
                 content={m.content}
                 avatar={m.avatar}
                 name={m.name}
-                CustomComponent={CustomComponent}
-                normalizeContent={normalizeContent}
             />
         </SmoothList>
     ));
@@ -216,6 +153,7 @@ function Chat() {
 
     const onEnterPress = (e) => {
         if (e.keyCode === 13 && e.shiftKey === false) {
+            e.preventDefault();
             sendMessage();
         }
     };
@@ -308,9 +246,15 @@ function Chat() {
         socket.emit("blurInput");
     };
 
+    const onHandleKeyUp = (e)=>{
+        $('#chatTextArea').css('height',`56px`)
+        let textAreaHeight = e.target.scrollHeight;
+        $('#chatTextArea').css('height',`${textAreaHeight}px`)
+    }
+
     return (
         <div
-            className="flex flex-col bg-base-200 w-6/12 h-full rounded-box relative"
+            className="flex flex-col bg-base-200 w-6/12 h-full rounded-box relative drawer-content"
             style={{
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
@@ -322,6 +266,7 @@ function Chat() {
                 type="file"
                 name="file"
                 hidden={true}
+                accept="image/*"
                 id="file"
                 multiple
                 onChange={changeInputFile}
@@ -554,17 +499,19 @@ function Chat() {
                 <div className="flex w-full">
                     <div className="bg-transparent w-full">
                         <div className="form-control">
-                            <input
+                            <textarea
                                 value={message}
                                 onKeyDown={onEnterPress}
+                                onKeyUp={(e)=>onHandleKeyUp(e)}
                                 onFocus={onFocusInput}
                                 onBlur={onBlurInput}
                                 onChange={handleChange}
                                 type="text"
                                 placeholder="Abc..."
                                 onPaste={pasteFromClipBoard}
-                                className={`input input-ghost focus:bg-transparent ${effect}`}
-                            />
+                                id="chatTextArea"
+                                className={`input input-ghost focus:bg-transparent ${effect} resize-none h-14 p-3`}
+                                style={{ maxHeight: "305px" }} />
                         </div>
                     </div>
                     <div className="flex items-center position-relative">

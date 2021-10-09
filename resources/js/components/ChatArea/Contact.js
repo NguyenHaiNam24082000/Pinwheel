@@ -15,8 +15,9 @@ export default function Contact() {
     const [mess, setMess] = useState("");
     const [lastMessage, setLastMessage] = useState({});
     const [typing, setTyping] = useState("");
+    const [search, setSearch] = useState("");
     const { user } = React.useContext(AuthContext);
-    const { conversations, setSelectedConversationId } =
+    const {searchContact, conversations, setSelectedConversationId } =
         React.useContext(AppContext);
     useEffect(() => {
         socket.on("serverSendLastData",(dataGot)=>{
@@ -62,9 +63,12 @@ export default function Contact() {
         // });
         return () => {};
     }, []);
+    const handleSearch = (e)=>{
+        setSearch(e.target.value);
+    }
     console.log("con",lastMessage);
     return (
-        <div className="flex flex-col mr-4 w-3/12 h-full rounded-box">
+        <div className="flex flex-col mr-4 w-3/12 h-full rounded-box drawer-side">
             <div
                 className="flex items-center w-full border-b text-xl font-bold"
                 style={{ height: "75px" }}
@@ -135,8 +139,12 @@ export default function Contact() {
                         type="text"
                         placeholder="Search"
                         className="w-full pr-16 input input-primary input-bordered"
+                        value={search}
+                        onChange={handleSearch}
                     />
-                    <button className="absolute top-0 right-0 rounded-l-none btn border-0 text-base btn-primary">
+                    <button className="absolute top-0 right-0 rounded-l-none btn border-0 text-base btn-primary"
+                        onClick={()=>{searchContact(search)}}
+                    >
                         go
                     </button>
                 </div>

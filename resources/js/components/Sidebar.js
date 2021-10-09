@@ -2,11 +2,16 @@ import React, { useState,useEffect } from "react";
 import "../../css/Sidebar.css";
 import { HiOutlineColorSwatch } from "react-icons/hi";
 import { IoLogOutOutline } from "react-icons/io5";
+import { TiGroup } from "react-icons/ti";
 import { auth } from "../firebase";
+import { useHistory } from "react-router-dom";
 import {AuthContext } from "../context/AuthProvider";
+import {AppContext} from "../context/AppProvider";
 
 function Sidebar({ theme, setThemeMode }) {
+    const history = useHistory();
     const {user}= React.useContext(AuthContext);
+    const { setSelectedConversationId } = React.useContext(AppContext);
     const themeMode = [
         { title: "🌚  dark", theme: "dark" },
         { title: "🧁  cupcake", theme: "cupcake" },
@@ -35,6 +40,7 @@ function Sidebar({ theme, setThemeMode }) {
                     src="../../images/logo.gif"
                     alt="logo"
                     className="cursor-pointer w-16 h-16 mask mask-squircle"
+                    onClick={()=>setSelectedConversationId("")}
                 />
             </div>
             <div className="flex flex-col justify-center">
@@ -42,7 +48,7 @@ function Sidebar({ theme, setThemeMode }) {
                     <HiOutlineColorSwatch />
                 </div>
                 <div tabIndex="0" className="m-1 btn btn-primary">
-                    <HiOutlineColorSwatch />
+                    <TiGroup className="w-5 h-5"/>
                 </div>
                 <div tabIndex="0" className="m-1 btn btn-primary">
                     <HiOutlineColorSwatch />
@@ -55,7 +61,7 @@ function Sidebar({ theme, setThemeMode }) {
                 </div>
                 <div className="dropdown dropdown-right dropdown-end">
                     <div tabIndex="0" className="m-1 btn btn-primary">
-                        <HiOutlineColorSwatch />
+                        <HiOutlineColorSwatch className="w-5 h-5"/>
                     </div>
                     <ul
                         tabIndex="0"
@@ -110,7 +116,7 @@ function Sidebar({ theme, setThemeMode }) {
                         <a>Item 2</a>
                     </li>
                     <li>
-                        <a onClick={() => auth.signOut()}>
+                        <a onClick={() => {auth.signOut(); history.push('/login')}}>
                             <IoLogOutOutline className="w-6 h-6 mr-3" />
                             Log out
                         </a>
