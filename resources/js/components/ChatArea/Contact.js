@@ -231,7 +231,7 @@ export default function Contact() {
                                         ? value.alias
                                         : value.title}
                                 </div>
-                                <div className="truncate">
+                                <div className="truncate">        
                                     {lastMessage.selectedConversationId ===
                                     value.conversationId
                                         ? lastMessage.id === user.id
@@ -273,7 +273,7 @@ export default function Contact() {
                     />
                 </div>
                 <div className="rounded-box bordered mt-5 text-black flex-row items-center border-4 p-2">
-                    {inputAddFriend.length >= 1 ? (
+                    {/* {inputAddFriend.length >= 1 ? ( */}
                          <div
                          className="flex items-center w-full p-5 hover:bg-gray-200 rounded-box cursor-pointer">
                          <div className="avatar online w-12 flex justify-center align-center mr-3 indicator">
@@ -295,21 +295,21 @@ export default function Contact() {
                             <a className="btn btn-primary">Add Friend</a>
                          </div>
                      </div>
-                    ) : (
-                        <>
-                            <figure className="flex justify-center m-3 items-center">
-                                <img src="../../../images/Add_friends.svg" />
-                            </figure>
-                            <div className="card-body">
-                                <h2 className="card-title">✋ Add Friends</h2>
-                                <p>
-                                    To see Pinwheel in action, you’ll need a few
-                                    more people here. Try inviting some of the
-                                    teammates you talk with most.
-                                </p>
-                            </div>
-                        </>
-                    )}
+                    {/* // ) : (
+                    //     <>
+                    //         <figure className="flex justify-center m-3 items-center">
+                    //             <img src="../../../images/Add_friends.svg" />
+                    //         </figure>
+                    //         <div className="card-body">
+                    //             <h2 className="card-title">✋ Add Friends</h2>
+                    //             <p>
+                    //                 To see Pinwheel in action, you’ll need a few
+                    //                 more people here. Try inviting some of the
+                    //                 teammates you talk with most.
+                    //             </p>
+                    //         </div>
+                    //     </>
+                    // )} */}
                 </div>
                 <div className="modal-action">
                     <a className="btn btn-primary">Search</a>
