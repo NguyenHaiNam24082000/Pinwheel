@@ -5,6 +5,8 @@ import { AppContext } from "../../context/AppProvider";
 import { AuthContext } from "../../context/AuthProvider";
 import { BiUpArrow } from "react-icons/bi";
 import { SocketContext } from "../../context/socket";
+import PaintChanel from "./Chanels/PaintChanel";
+import ModalChanel from "../Modals/ModalChanel";
 
 export default function Detail() {
     const { socket } = useContext(SocketContext);
@@ -19,6 +21,7 @@ export default function Detail() {
             : false;
     });
     const [soundOff, setSoundOff] = useState(false);
+    const [openModalPaintChanel, setOpenModalPaintChanel] = useState(false);
     const [listMic, setListMic] = useState([]);
 
     useEffect(() => {
@@ -266,8 +269,14 @@ export default function Detail() {
                             <i className="fas fa-caret-down mr-3"></i>Text
                             Channels
                         </div>
-                        <div className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer">
+                        <div className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer" onClick={()=>setOpenModalPaintChanel(!openModalPaintChanel)}>
                             <i className="fas fa-hashtag mr-2"></i>Paint
+                        </div>
+                        <div className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer" onClick={()=>setOpenModalPaintChanel(!openModalPaintChanel)}>
+                            <i className="fas fa-hashtag mr-2"></i>Note
+                        </div>
+                        <div className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer" onClick={()=>setOpenModalPaintChanel(!openModalPaintChanel)}>
+                            <i className="fas fa-hashtag mr-2"></i>To do
                         </div>
                     </div>
                     <div className="w-full pt-3">
@@ -553,6 +562,9 @@ export default function Detail() {
                     </div>
                 </div>
             </div>
+            <ModalChanel show={openModalPaintChanel} handleClose={()=>{setOpenModalPaintChanel(false)}}>
+                <PaintChanel/>
+            </ModalChanel>
         </div>
     );
 }

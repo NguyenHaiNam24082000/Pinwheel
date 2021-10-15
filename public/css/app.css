@@ -3290,6 +3290,9 @@ html {
 .-right-6 {
 	right: -1.5rem;
 }
+.top-1 {
+	top: 0.25rem;
+}
 .z-20 {
 	z-index: 20;
 }

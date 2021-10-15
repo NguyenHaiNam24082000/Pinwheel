@@ -12,7 +12,7 @@ import AuthProvider from "../context/AuthProvider";
 import AppProvider from "../context/AppProvider";
 // import modals from "./Modals";
 // import { ModalProvider } from "react-simple-modal-provider";
-import PaintChanel from "./ChatArea/PaintChanel";
+import PaintChanel from "./ChatArea/Chanels/PaintChanel";
 
 function Index() {
     let isOnline = true;
