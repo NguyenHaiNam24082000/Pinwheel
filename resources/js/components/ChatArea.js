@@ -6,7 +6,7 @@ import $ from "jquery";
 import { AppContext } from "../context/AppProvider";
 
 export default function ChatArea() {
-    const { selectedConversationId } = React.useContext(AppContext);
+    const { selectedConversationId,openDetail } = React.useContext(AppContext);
 
     React.useEffect(() => {
         // START
@@ -51,7 +51,7 @@ export default function ChatArea() {
             {selectedConversationId !== "" ? (
                 <>
                     <Chat/>
-                    <Detail/>
+                    {openDetail=== true ?<Detail/>:""}
                 </>
             ) : (
                 <div

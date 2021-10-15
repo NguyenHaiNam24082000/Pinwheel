@@ -51,6 +51,7 @@ export default function Message({
         warning: /\!\!(.*)\!\!/gm,
         highlight: />>(.*)<</gm,
         bracket: /\[_(.*)_\]/gm,
+        circle: /\(\(_(.*)_\)\)/gs,
     };
 
     const format = (content) =>
@@ -211,6 +212,7 @@ export default function Message({
         let highlight = content.match(patterns.highlight);
         let codeMultiline = content.match(patterns.codeMultiline);
         let bracket = content.match(patterns.bracket);
+        let circle = content.match(patterns.circle);
         if (links !== null) {
             let replaceString = reactStringReplace(
                 content,
@@ -295,6 +297,24 @@ export default function Message({
                         padding={[2, 10]}
                         brackets={['left', 'right']}
                         strokeWidth= {3}
+                    >
+                        {match}
+                    </RoughNotation>
+                )
+            );
+            return <>{replaceString}</>;
+        }
+        if(circle !==null) {
+            let replaceString = reactStringReplace(
+                content,
+                patterns.circle,
+                (match, i) => (
+                    // <a key={match + i} href={match}>{match}</a>
+                    <RoughNotation
+                        key={match + i}
+                        type="circle"
+                        color="red"
+                        padding={10}
                     >
                         {match}
                     </RoughNotation>

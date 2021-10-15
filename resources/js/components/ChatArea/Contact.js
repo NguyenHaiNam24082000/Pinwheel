@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { FiPlus, FiMenu } from "react-icons/fi";
 import TimeAgo from "react-timeago";
-import { useModal } from "react-simple-modal-provider";
+import Modal from "../Modals/Modal";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthProvider";
 import { AppContext } from "../../context/AppProvider";
@@ -10,17 +10,20 @@ import { SocketContext } from "../../context/socket";
 export default function Contact() {
     // const [user,setUser]=useState({});
     const { socket } = React.useContext(SocketContext);
-    const { open: openModalAddFriend } = useModal("ModalAddFriend");
-    const { open: openModalStories } = useModal("ModalStories");
+    // const { open: openModalAddFriend } = useModal("ModalAddFriend");
+    // const { open: openModalStories } = useModal("ModalStories");
+    const [openModalStories, setOpenModalStories] = useState(false);
+    const [inputAddFriend, setInputAddFriend] = useState("");
+    const [openModalAddFriend, setOpenModalAddFriend] = useState(false);
     const [mess, setMess] = useState("");
     const [lastMessage, setLastMessage] = useState({});
     const [typing, setTyping] = useState("");
     const [search, setSearch] = useState("");
     const { user } = React.useContext(AuthContext);
-    const {searchContact, conversations, setSelectedConversationId } =
+    const { searchContact, conversations, setSelectedConversationId } =
         React.useContext(AppContext);
     useEffect(() => {
-        socket.on("serverSendLastData",(dataGot)=>{
+        socket.on("serverSendLastData", (dataGot) => {
             setLastMessage(dataGot.data);
         });
 
@@ -63,10 +66,10 @@ export default function Contact() {
         // });
         return () => {};
     }, []);
-    const handleSearch = (e)=>{
+    const handleSearch = (e) => {
         setSearch(e.target.value);
-    }
-    console.log("con",lastMessage);
+    };
+    console.log("con", lastMessage);
     return (
         <div className="flex flex-col mr-4 w-3/12 h-full rounded-box drawer-side">
             <div
@@ -80,7 +83,9 @@ export default function Contact() {
                     <li className="flex flex-col items-center space-y-1">
                         <div className="relative avatar">
                             <div
-                                onClick={openModalStories}
+                                onClick={() =>
+                                    setOpenModalStories(!openModalStories)
+                                }
                                 className="rounded-full w-16 h-16 ring ring-primary ring-offset-base-100 ring-offset-2"
                             >
                                 <img src={user.avatar} />
@@ -142,8 +147,11 @@ export default function Contact() {
                         value={search}
                         onChange={handleSearch}
                     />
-                    <button className="absolute top-0 right-0 rounded-l-none btn border-0 text-base btn-primary"
-                        onClick={()=>{searchContact(search)}}
+                    <button
+                        className="absolute top-0 right-0 rounded-l-none btn border-0 text-base btn-primary"
+                        onClick={() => {
+                            searchContact(search);
+                        }}
                     >
                         go
                     </button>
@@ -154,7 +162,9 @@ export default function Contact() {
                 <div>
                     <button
                         className="btn btn-primary btn-square btn-sm mask mask-squircle mr-2"
-                        onClick={openModalAddFriend}
+                        onClick={() =>
+                            setOpenModalAddFriend(!openModalAddFriend)
+                        }
                     >
                         <FiPlus />
                     </button>
@@ -174,17 +184,42 @@ export default function Contact() {
                             }
                         >
                             <div className="avatar online w-12 flex justify-center align-center mr-3 indicator">
-                            {typing===`${value.conversationId}` && (
-                                <div className="indicator-item badge indicator-bottom flex align-center p-0 h-5 w-8 bg-primary border-2 border-base-100"
-                                    style={{bottom:"8px",left:"3px"}}
-                                >
-                                    <div className="typing flex align-center w-full h-full" style={{margin: "0px"}}>
-                                        <span className="circle scaling bg-white" style={{width: "6px",height:"6px",margin:"2px"}}></span>
-                                        <span className="circle scaling bg-white" style={{width: "6px",height:"6px",margin:"2px"}}></span>
-                                        <span className="circle scaling bg-white" style={{width: "6px",height:"6px",margin:"2px"}}></span>
+                                {typing === `${value.conversationId}` && (
+                                    <div
+                                        className="indicator-item badge indicator-bottom flex align-center p-0 h-5 w-8 bg-primary border-2 border-base-100"
+                                        style={{ bottom: "8px", left: "3px" }}
+                                    >
+                                        <div
+                                            className="typing flex align-center w-full h-full"
+                                            style={{ margin: "0px" }}
+                                        >
+                                            <span
+                                                className="circle scaling bg-white"
+                                                style={{
+                                                    width: "6px",
+                                                    height: "6px",
+                                                    margin: "2px",
+                                                }}
+                                            ></span>
+                                            <span
+                                                className="circle scaling bg-white"
+                                                style={{
+                                                    width: "6px",
+                                                    height: "6px",
+                                                    margin: "2px",
+                                                }}
+                                            ></span>
+                                            <span
+                                                className="circle scaling bg-white"
+                                                style={{
+                                                    width: "6px",
+                                                    height: "6px",
+                                                    margin: "2px",
+                                                }}
+                                            ></span>
+                                        </div>
                                     </div>
-                                </div>)
-                            }
+                                )}
                                 <div className="rounded-full w-12 h-12">
                                     <img src={value.avatar} />
                                 </div>
@@ -196,7 +231,14 @@ export default function Contact() {
                                         ? value.alias
                                         : value.title}
                                 </div>
-                                <div className="truncate">{lastMessage.selectedConversationId===value.conversationId? lastMessage.id===user.id? `You: ${lastMessage.content}`: lastMessage.content:""}</div>
+                                <div className="truncate">
+                                    {lastMessage.selectedConversationId ===
+                                    value.conversationId
+                                        ? lastMessage.id === user.id
+                                            ? `You: ${lastMessage.content}`
+                                            : lastMessage.content
+                                        : ""}
+                                </div>
                             </div>
 
                             <div className="w-10 flex justify-center items-center text-center text-sm">
@@ -205,6 +247,80 @@ export default function Contact() {
                         </div>
                     ))}
             </div>
+            <Modal
+                show={openModalStories}
+                handleClose={() => setOpenModalStories(false)}
+            >
+                <div>Test</div>
+            </Modal>
+            <Modal
+                show={openModalAddFriend}
+                handleClose={() => setOpenModalAddFriend(false)}
+            >
+                <div className="text-black text-xl font-bold">Add Friend</div>
+                <div className="form-control">
+                    <label className="label">
+                        <span className="label-text text-black font-bold">
+                            Username
+                        </span>
+                    </label>
+                    <input
+                        value={inputAddFriend}
+                        onChange={(e) => setInputAddFriend(e.target.value)}
+                        type="text"
+                        placeholder="https://bookmark.com"
+                        className="input input-bordered"
+                    />
+                </div>
+                <div className="rounded-box bordered mt-5 text-black flex-row items-center border-4 p-2">
+                    {inputAddFriend.length >= 1 ? (
+                         <div
+                         className="flex items-center w-full p-5 hover:bg-gray-200 rounded-box cursor-pointer">
+                         <div className="avatar online w-12 flex justify-center align-center mr-3 indicator">
+                             <div className="rounded-full w-12 h-12">
+                                 <img src="https://s120-ava-talk.zadn.vn/1/4/e/e/11/120/2555995a33d1b8a501d92c135cd05d11.jpg" />
+                             </div>
+                         </div>
+
+                         <div className="flex flex-col w-full truncate overflow-ellipsis">
+                             <div className="truncate font-bold">
+                                Tung
+                             </div>
+                             <div className="truncate">
+                             Friend Suggestions
+                             </div>
+                         </div>
+
+                         <div className="w-20 mr-3 flex justify-center items-center text-center text-sm">
+                            <a className="btn btn-primary">Add Friend</a>
+                         </div>
+                     </div>
+                    ) : (
+                        <>
+                            <figure className="flex justify-center m-3 items-center">
+                                <img src="../../../images/Add_friends.svg" />
+                            </figure>
+                            <div className="card-body">
+                                <h2 className="card-title">✋ Add Friends</h2>
+                                <p>
+                                    To see Pinwheel in action, you’ll need a few
+                                    more people here. Try inviting some of the
+                                    teammates you talk with most.
+                                </p>
+                            </div>
+                        </>
+                    )}
+                </div>
+                <div className="modal-action">
+                    <a className="btn btn-primary">Search</a>
+                    <a
+                        className="btn"
+                        onClick={() => setOpenModalBookmark(false)}
+                    >
+                        Close
+                    </a>
+                </div>
+            </Modal>
         </div>
     );
 }

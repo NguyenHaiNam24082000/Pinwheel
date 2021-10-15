@@ -10,8 +10,8 @@ import toast, { Toaster } from "react-hot-toast";
 import { BiWifiOff, BiWifi } from "react-icons/bi";
 import AuthProvider from "../context/AuthProvider";
 import AppProvider from "../context/AppProvider";
-import modals from "./Modals";
-import { ModalProvider } from "react-simple-modal-provider";
+// import modals from "./Modals";
+// import { ModalProvider } from "react-simple-modal-provider";
 import PaintChanel from "./ChatArea/PaintChanel";
 
 function Index() {
@@ -122,7 +122,7 @@ function Index() {
         <BrowserRouter>
             <AuthProvider>
                 <AppProvider>
-                    <ModalProvider value={modals}>
+                    {/* <ModalProvider value={modals}> */}
                         <Switch>
                             <Route component={Register} path="/register" />
                             <Route component={Login} path="/login" />
@@ -146,7 +146,7 @@ function Index() {
                                     </div>
                                 </Route>
                         </Switch>
-                    </ModalProvider>
+                    {/* </ModalProvider> */}
                 </AppProvider>
             </AuthProvider>
         </BrowserRouter>

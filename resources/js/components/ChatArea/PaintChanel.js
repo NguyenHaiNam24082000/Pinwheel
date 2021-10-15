@@ -4,6 +4,7 @@ import reactCSS from "reactcss";
 import rough from "roughjs/bundled/rough.esm";
 import hexRgb from "hex-rgb";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
+import ReactStickies from 'react-stickies';
 
 const generator = rough.generator();
 

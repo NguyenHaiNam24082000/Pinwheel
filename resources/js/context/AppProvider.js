@@ -6,6 +6,7 @@ export const AppContext = React.createContext();
 export default function AppProvider({ children }) {
     const [conversations, setConversations] = useState([]);
     const [selectedConversationId, setSelectedConversationId] = useState("");
+    const [openDetail, setOpenDetail] = useState(true);
     const { user } = React.useContext(AuthContext);
     useEffect(() => {
         // getUserInfo().then(res => setUser(res.data));
@@ -35,6 +36,11 @@ export default function AppProvider({ children }) {
                             ...conversationList,
                             data,
                         ]);
+                    if (data.kind === "group" && data.id === user.id)
+                        setConversations((conversationList) => [
+                            ...conversationList,
+                            data,
+                        ]);
                 });
             })
             .catch(function (error) {
@@ -60,6 +66,8 @@ export default function AppProvider({ children }) {
                 selectedConversation,
                 selectedConversationId,
                 setSelectedConversationId,
+                openDetail,
+                setOpenDetail
             }}
         >
             {children}

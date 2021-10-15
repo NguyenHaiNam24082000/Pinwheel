@@ -12,7 +12,7 @@ const socketIo = require("socket.io")(server, {
 let users = {};
 
 const addUser = (user, socketId) => {
-    users[socketId]=user ;
+    users[socketId] = user;
 };
 
 const removeUser = (socketId) => {
@@ -40,40 +40,47 @@ socketIo.on("connection", (socket) => {
     //     socketIo.emit("getUsers", users);
     // });
 
-    socket.on("joinConversation",(data) => {
-        addUser(data,socket.id)
+    socket.on("joinConversation", (data) => {
+        addUser(data, socket.id);
         const user = users[socket.id];
-        socket.room= user.selectedConversationId.toString();
+        socket.room = user.selectedConversationId.toString();
         socket.join(user.selectedConversationId.toString());
-    })
+    });
 
     socket.on("clientSendData", function (data) {
         const user = users[socket.id];
-        data={
+        data = {
             ...user,
-            ...data
-        }
-        socketIo.sockets.emit("serverSendLastData",{data});
+            ...data,
+        };
+        socketIo.sockets.emit("serverSendLastData", { data });
         socketIo.sockets.in(socket.room).emit("serverSendData", { data });
     });
 
-    socket.on("focusInput",()=>{
+    socket.on("focusInput", () => {
         const user = users[socket.id];
         // const s=`${user.name} is typing`;
-        const s="Typing";
-        socket.broadcast.emit("serverFocusTyping",socket.room);
-        socket.to(socket.room).emit("serverFocusInput",s);
+        const s = "Typing";
+        socket.broadcast.emit("serverFocusTyping", socket.room);
+        socket.to(socket.room).emit("serverFocusInput", s);
     });
 
-    socket.on("blurInput",()=>{
+    socket.on("blurInput", () => {
         socket.broadcast.emit("serverBlurTyping");
         socket.to(socket.room).emit("serverBlurInput");
+    });
+
+    socket.on("voice", function (data) {
+        // var newData = data.split(";");
+        // newData[0] = "data:audio/ogg;";
+        // newData = newData[0] + newData[1];
+        socket.broadcast.to(socket.room).emit("sendVoice", data);
     });
 
     socket.on("disconnect", () => {
         socket.broadcast.emit("serverBlurTyping");
         socket.to(socket.room).emit("serverBlurInput");
-        removeUser(socket.id)
+        removeUser(socket.id);
         console.log("Client disconnected");
     });
 });

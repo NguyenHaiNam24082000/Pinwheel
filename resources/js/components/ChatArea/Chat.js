@@ -33,13 +33,26 @@ import Message from "./Message";
 import SmoothList from "react-smooth-list";
 import { AppContext } from "../../context/AppProvider";
 import { AuthContext } from "../../context/AuthProvider";
+import {
+    BsBoxArrowDownRight,
+    BsBoxArrowInDownRight,
+    BsPlusSquare,
+} from "react-icons/bs";
+import { CgMoreR } from "react-icons/cg";
+import Modal from "../Modals/Modal";
 
 function Chat() {
-    const { conversations, selectedConversation, selectedConversationId } =
-        useContext(AppContext);
+    const {
+        conversations,
+        selectedConversation,
+        selectedConversationId,
+        setOpenDetail,
+        openDetail,
+    } = useContext(AppContext);
     const { user } = useContext(AuthContext);
     const { socket } = useContext(SocketContext);
     const [showEmoji, setShowEmoji] = useState(false);
+    const [openModalBookmark, setOpenModalBookmark] = useState(false);
     const [mess, setMess] = useState([]);
     const [message, setMessage] = useState("");
     const [file, setFile] = useState();
@@ -133,9 +146,8 @@ function Chat() {
         messagesEnd.current.scrollIntoView({ behavior: "smooth" });
     };
 
-
     const renderMess = mess.map((m, index) => (
-        <SmoothList key={index+user.id}>
+        <SmoothList key={index + user.id}>
             <Message
                 userId={user.id}
                 messageId={m.id}
@@ -246,15 +258,17 @@ function Chat() {
         socket.emit("blurInput");
     };
 
-    const onHandleKeyUp = (e)=>{
-        $('#chatTextArea').css('height',`56px`)
+    const onHandleKeyUp = (e) => {
+        $("#chatTextArea").css("height", `56px`);
         let textAreaHeight = e.target.scrollHeight;
-        $('#chatTextArea').css('height',`${textAreaHeight}px`)
-    }
+        $("#chatTextArea").css("height", `${textAreaHeight}px`);
+    };
 
     return (
         <div
-            className="flex flex-col bg-base-200 w-6/12 h-full rounded-box relative drawer-content"
+            className={`flex flex-col bg-base-200 h-full rounded-box relative drawer-content ${
+                openDetail === true ? "w-6/12" : "w-9/12"
+            }`}
             style={{
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
@@ -303,9 +317,9 @@ function Chat() {
                     </div>
                 </div> */}
             {/* </div> */}
-            <div className="w-full inline-flex absolute h-16">
+            <div className="w-full inline-flex absolute h-28 flex-col">
                 <div
-                    className="inline-flex items-center w-full h-full border-b text-xl justify-between"
+                    className="inline-flex items-center w-full h-full border-b text-xl justify-between h-16"
                     style={{
                         background: "rgba(255,255,255,0.3)",
                         borderTopLeftRadius: "var(--rounded-box,1rem)",
@@ -322,17 +336,64 @@ function Chat() {
                             ? selectedConversation.alias
                             : selectedConversation.title}
                     </div>
-                    <div className="-space-x-5 avatar-group mr-4">
+                    <div className="flex  mr-4">
                         <button
-                            className="btn btn-primary btn-square mask mask-squircle justify-center items-center"
+                            className="btn btn-primary btn-square mask mask-squircle justify-center items-center mr-3"
                             // onClick={makeCall}
                             onClick={() => {
                                 setPlay(!play);
                             }}
                         >
-                            <FaVideo />
+                            <FaVideo className="w-5 h-5" />
+                        </button>
+                        <button
+                            className="btn btn-primary btn-square mask mask-squircle justify-center items-center"
+                            onClick={() => {
+                                setOpenDetail(!openDetail);
+                            }}
+                        >
+                            {openDetail === true ? (
+                                <BsBoxArrowDownRight className="w-5 h-5" />
+                            ) : (
+                                <BsBoxArrowInDownRight className="w-5 h-5" />
+                            )}
                         </button>
                     </div>
+                </div>
+                <div
+                    className="flex px-3 py-1 border-b overflow-hidden justify-between"
+                    style={{
+                        background: "rgba(255,255,255,0.3)",
+                    }}
+                >
+                    <button
+                        onClick={() => setOpenModalBookmark(true)}
+                        className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-44 mr-2 truncate"
+                    >
+                        <BsPlusSquare className="mr-3"></BsPlusSquare>
+                        <span className="truncate overflow-ellipsis">
+                            Add a bookmark
+                        </span>
+                    </button>
+                    <a
+                        target="_blank"
+                        href="https://www.facebook.com/"
+                        className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-44 mr-2 truncate"
+                    >
+                        <BsPlusSquare className="mr-3"></BsPlusSquare>
+                        <span className="truncate overflow-ellipsis">
+                            Facebook Abc xyz
+                        </span>
+                    </a>
+                    <a className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-44 mr-2 truncate">
+                        <BsPlusSquare className="mr-3"></BsPlusSquare>
+                        <span className="truncate overflow-ellipsis">
+                            Add a bookmark
+                        </span>
+                    </a>
+                    <a className="rounded h-8 px-3 btn-primary text-base inline-flex items-center w-12 mr-2 truncate justify-center">
+                        <CgMoreR></CgMoreR>
+                    </a>
                 </div>
             </div>
             <div className="flex flex-col w-full h-full overflow-y-auto mt-16 overflow-x-hidden">
@@ -355,7 +416,9 @@ function Chat() {
                 )}
             </div>
             <div
-                className={`flex flex-col h-auto rounded-box bg-base-300 ${typing===''? 'm-4' : 'mx-4 mb-4'} items-center`}
+                className={`flex flex-col h-auto rounded-box bg-base-300 ${
+                    typing === "" ? "m-4" : "mx-4 mb-4"
+                } items-center`}
                 style={{ width: "calc(100% - 32px)" }}
             >
                 {/* <div className="w-10 h-14 flex justify-center items-center ml-3">
@@ -502,7 +565,7 @@ function Chat() {
                             <textarea
                                 value={message}
                                 onKeyDown={onEnterPress}
-                                onKeyUp={(e)=>onHandleKeyUp(e)}
+                                onKeyUp={(e) => onHandleKeyUp(e)}
                                 onFocus={onFocusInput}
                                 onBlur={onBlurInput}
                                 onChange={handleChange}
@@ -510,8 +573,9 @@ function Chat() {
                                 placeholder="Abc..."
                                 onPaste={pasteFromClipBoard}
                                 id="chatTextArea"
-                                className={`input input-ghost focus:bg-transparent ${effect} resize-none h-14 p-3`}
-                                style={{ maxHeight: "305px" }} />
+                                className={`input input-ghost focus:bg-transparent ${effect} resize-none p-3`}
+                                style={{ maxHeight: "305px" }}
+                            />
                         </div>
                     </div>
                     <div className="flex items-center position-relative">
@@ -741,6 +805,72 @@ function Chat() {
                     </div>
                 </div>
             </div>
+            <Modal
+                handleClose={() => setOpenModalBookmark(false)}
+                show={openModalBookmark}
+            >
+                <div className="text-black text-xl font-bold">
+                    Add a bookmark to this channel
+                </div>
+                <div className="form-control">
+                    <label className="label">
+                        <span className="label-text text-black font-bold">
+                            Link
+                        </span>
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="https://bookmark.com"
+                        className="input input-bordered"
+                    />
+                </div>
+                <div className="form-control">
+                    <label className="label">
+                        <span className="label-text text-black font-bold">
+                            Title
+                        </span>
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="Ex. Project"
+                        className="input input-bordered"
+                    />
+                </div>
+                <div className="form-control">
+                    <label className="label">
+                        <span className="label-text text-black font-bold">
+                            Description
+                        </span>
+                    </label>
+                    <input
+                        type="text"
+                        placeholder="Social App"
+                        className="input input-bordered"
+                    />
+                </div>
+                <div className="card bordered mt-5 text-black flex-row items-center border-4">
+                    <figure className="flex justify-center m-3 items-center">
+                        <img src="../../../images/Bookmark.svg" />
+                    </figure>
+                    <div className="card-body">
+                        <h2 className="card-title">
+                            Bookmark important links for your team
+                        </h2>
+                        <p>
+                            Add bookmarks for links you want to find quickly.
+                            All channel members can see the bookmarks you add.
+                        </p>
+                    </div>
+                </div>
+                <div className="modal-action">
+                    <a className="btn btn-primary">
+                        Add
+                    </a>
+                    <a className="btn" onClick={() => setOpenModalBookmark(false)}>
+                        Close
+                    </a>
+                </div>
+            </Modal>
         </div>
     );
 }

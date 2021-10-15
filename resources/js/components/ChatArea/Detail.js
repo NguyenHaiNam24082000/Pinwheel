@@ -1,17 +1,91 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { BsFileEarmark } from "react-icons/bs";
 import $ from "jquery";
 import { AppContext } from "../../context/AppProvider";
 import { AuthContext } from "../../context/AuthProvider";
 import { BiUpArrow } from "react-icons/bi";
+import { SocketContext } from "../../context/socket";
 
 export default function Detail() {
-    const { conversations, selectedConversation } =
+    const { socket } = useContext(SocketContext);
+    const { conversations, selectedConversation, selectedConversationId } =
         React.useContext(AppContext);
     const { user } = React.useContext(AuthContext);
-    const [mute, setMute] = useState(false);
+    const [mute, setMute] = useState(() => {
+        return localStorage.getItem("mic") === null
+            ? false
+            : localStorage.getItem("mic") === "true"
+            ? true
+            : false;
+    });
     const [soundOff, setSoundOff] = useState(false);
     const [listMic, setListMic] = useState([]);
+
+    useEffect(() => {
+        navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
+            var mediaRecorder = new MediaRecorder(stream);
+            var audioChunks = [];
+            mediaRecorder.start();
+            mediaRecorder.addEventListener("start", function (e) {
+                audioChunks = [];
+            });
+
+            mediaRecorder.addEventListener("dataavailable", function (event) {
+                audioChunks.push(event.data);
+            });
+
+            mediaRecorder.addEventListener("stop", function () {
+                var audioBlob = new Blob(audioChunks, {
+                    type: "audio/ogg; codecs=opus",
+                });
+                if(!mute)
+                {
+                    socket.emit("voice", audioBlob);
+                }
+                audioChunks=[];
+                // var fileReader = new FileReader();
+                // fileReader.readAsDataURL(audioBlob);
+                // fileReader.onloadend = function () {
+                //         var base64String = fileReader.result;
+
+                // };
+                mediaRecorder.start();
+                setTimeout(function () {
+                    mediaRecorder.stop();
+                }, 100);
+            });
+
+            setTimeout(function () {
+                mediaRecorder.stop();
+            }, 100);
+        });
+
+        socket.on("sendVoice", function (data) {
+            var blob = new Blob([data], { type: "audio/ogg; codecs=opus" });
+            var audio = document.createElement("audio");
+            audio.src = window.URL.createObjectURL(blob);
+            console.log(blob);
+            // audio.play();
+        });
+        // socket.emit("online",user)
+        // socket.on("getUsers", (data) => {
+        //     console.log("Hello",data)
+        // });
+        // socket.on("serverSendData", (dataGot) => {
+        //     console.log("datagot", dataGot);
+        //     setMess((oldMsgs) => [...oldMsgs, dataGot.data]);
+        //     scrollToBottom();
+        // });
+
+        // socket.on("serverFocusInput", (s) => {
+        //     setTyping(s);
+        // });
+
+        // socket.on("serverBlurInput", () => {
+        //     setTyping("");
+        // });
+        return () => {};
+    }, [mute]);
 
     const openTabChanel = () => {
         $(".tab").toggleClass("tab-active");
@@ -26,7 +100,14 @@ export default function Detail() {
         $(".chanel").hide();
     };
     const onHandleMic = () => {
-        setMute(!mute);
+        let storageKey = "mic";
+        if (localStorage.getItem(storageKey) === null) {
+            localStorage.setItem(storageKey, "true");
+        } else {
+            if (mute === false) localStorage.setItem(storageKey, "true");
+            else localStorage.setItem(storageKey, "false");
+        }
+        setMute(localStorage.getItem(storageKey) === "true" ? true : false);
     };
 
     const onHandleHeadset = () => {
@@ -34,15 +115,15 @@ export default function Detail() {
     };
 
     const getDevices = () => {
-        navigator.mediaDevices
-            .getUserMedia({ audio: true, video: false })
-            .then(() => {
-                navigator.mediaDevices
-                    .enumerateDevices()
-                    .then((mediaDevices) => {
-                        console.log(JSON.stringify(mediaDevices, null, 2));
-                    });
-            });
+        // navigator.mediaDevices
+        //     .getUserMedia({ audio: true, video: false })
+        //     .then(() => {
+        //         navigator.mediaDevices
+        //             .enumerateDevices()
+        //             .then((mediaDevices) => {
+        //                 console.log(JSON.stringify(mediaDevices, null, 2));
+        //             });
+        //     });
     };
 
     getDevices();
@@ -180,147 +261,27 @@ export default function Detail() {
                 style={{ display: "none" }}
             >
                 <div className="hashtag-bar text-sm leading-relaxed overflow-y-auto">
-                    <ul className="px-2 py-3">
-                        <li className="text-gray-500 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">welcome</span>
-                            </a>
-                        </li>{" "}
-                        <li className="text-gray-500 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">faq</span>
-                            </a>
-                        </li>
-                    </ul>{" "}
-                    <button className="flex items-center text-gray-500 hover:text-gray-200">
-                        <svg
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                            width={24}
-                            height={24}
-                        >
-                            <path
-                                d="M15.3 9.3a1 1 0 0 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4l3.3 3.29 3.3-3.3z"
-                                className="heroicon-ui"
-                            />
-                        </svg>{" "}
-                        <h3 className="uppercase tracking-wide font-semibold text-xs">
-                            Tailwind CSS
-                        </h3>
-                    </button>{" "}
-                    <ul className="px-2 py-3 pt-2">
-                        <li className="text-gray-200 px-2 hover:text-gray-200 hover:bg-gray-900 bg-gray-750 rounded">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">general</span>
-                            </a>
-                        </li>{" "}
-                        <li className="text-gray-200 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">core-dev</span>
-                            </a>
-                        </li>{" "}
-                        <li className="text-gray-500 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">course</span>
-                            </a>
-                        </li>{" "}
-                        <li className="text-gray-500 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">plugins</span>
-                            </a>
-                        </li>{" "}
-                        <li className="text-gray-200 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">docs</span>
-                            </a>
-                        </li>{" "}
-                        <li className="text-gray-500 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">showcase</span>
-                            </a>
-                        </li>{" "}
-                        <li className="text-gray-200 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">help</span>
-                            </a>
-                        </li>
-                    </ul>{" "}
-                    <button className="flex items-center text-gray-500 hover:text-gray-200">
-                        <svg
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                            width={24}
-                            height={24}
-                        >
-                            <path
-                                d="M15.3 9.3a1 1 0 0 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4l3.3 3.29 3.3-3.3z"
-                                className="heroicon-ui"
-                            />
-                        </svg>{" "}
-                        <h3 className="uppercase tracking-wide font-semibold text-xs">
-                            Community
-                        </h3>
-                    </button>{" "}
-                    <ul className="px-2 py-3 pt-2">
-                        <li className="text-gray-500 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">feedback</span>
-                            </a>
-                        </li>{" "}
-                        <li className="text-gray-500 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">jobs</span>
-                            </a>
-                        </li>
-                    </ul>{" "}
-                    <button className="flex items-center text-gray-500 hover:text-gray-200">
-                        <svg
-                            fill="currentColor"
-                            viewBox="0 0 24 24"
-                            width={24}
-                            height={24}
-                        >
-                            <path
-                                d="M15.3 9.3a1 1 0 0 1 1.4 1.4l-4 4a1 1 0 0 1-1.4 0l-4-4a1 1 0 0 1 1.4-1.4l3.3 3.29 3.3-3.3z"
-                                className="heroicon-ui"
-                            />
-                        </svg>{" "}
-                        <h3 className="uppercase tracking-wide font-semibold text-xs">
-                            Off Topic
-                        </h3>
-                    </button>{" "}
-                    <ul className="px-2 py-3 pt-2">
-                        <li className="text-gray-500 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">design</span>
-                            </a>
-                        </li>{" "}
-                        <li className="text-gray-500 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">development</span>
-                            </a>
-                        </li>{" "}
-                        <li className="text-gray-500 px-2 hover:text-gray-200 hover:bg-gray-900">
-                            <a href="#" className="flex items-center">
-                                <span className="text-xl">#</span>{" "}
-                                <span className="ml-2">random</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>{" "}
+                    <div className="w-full pt-3">
+                        <div className="text-lg font-bold">
+                            <i className="fas fa-caret-down mr-3"></i>Text
+                            Channels
+                        </div>
+                        <div className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer">
+                            <i className="fas fa-hashtag mr-2"></i>Paint
+                        </div>
+                    </div>
+                    <div className="w-full pt-3">
+                        <div className="text-lg font-bold">
+                            <i className="fas fa-caret-down mr-3"></i>Voice
+                            Channels
+                        </div>
+                        <div className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer">
+                            <i className="fas fa-volume-up mr-2"></i>Waiting
+                            Rooms
+                            <div></div>
+                        </div>
+                    </div>
+                </div>
                 <div className="w-full rounded-box bg-base-300 h-14 pl-3 pr-1 py-3 flex items-center justify-between absolute bottom-0">
                     <div className="flex items-center rounded-full">
                         <a href="#" data-tip={user.name} className="tooltip">
@@ -346,7 +307,7 @@ export default function Detail() {
                         <div className="relative p-0 dropdown dropdown-top dropdown-end">
                             <button
                                 className=" btn mask mask-squircle ml-1 p-2 rounded-box btn-primary hover:text-white tooltip"
-                                data-tip="Sound off"
+                                data-tip="Mute"
                                 onClick={onHandleMic}
                             >
                                 {!mute ? (
@@ -461,7 +422,7 @@ export default function Detail() {
                         </div>
                         <div className="relative p-0 dropdown dropdown-top dropdown-end">
                             <button
-                                data-tip="Mute"
+                                data-tip="Sound off"
                                 className="tooltip btn mask mask-squircle ml-1 p-2 rounded-box btn-primary hover:text-white"
                                 onClick={onHandleHeadset}
                             >

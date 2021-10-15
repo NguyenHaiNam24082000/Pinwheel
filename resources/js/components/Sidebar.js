@@ -13,6 +13,7 @@ function Sidebar({ theme, setThemeMode }) {
     const {user}= React.useContext(AuthContext);
     const { setSelectedConversationId } = React.useContext(AppContext);
     const themeMode = [
+        { title: "🌝  light", theme: "light" },
         { title: "🌚  dark", theme: "dark" },
         { title: "🧁  cupcake", theme: "cupcake" },
         { title: "🐝  bumblebee", theme: "bumblebee" },
