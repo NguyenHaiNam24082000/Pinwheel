@@ -45,7 +45,6 @@ export default function Detail() {
                 {
                     socket.emit("voice", audioBlob);
                 }
-                audioChunks=[];
                 // var fileReader = new FileReader();
                 // fileReader.readAsDataURL(audioBlob);
                 // fileReader.onloadend = function () {
@@ -55,12 +54,12 @@ export default function Detail() {
                 mediaRecorder.start();
                 setTimeout(function () {
                     mediaRecorder.stop();
-                }, 100);
+                }, 300);
             });
 
             setTimeout(function () {
                 mediaRecorder.stop();
-            }, 100);
+            }, 300);
         });
 
         socket.on("sendVoice", function (data) {
