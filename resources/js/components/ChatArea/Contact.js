@@ -12,6 +12,7 @@ export default function Contact() {
     const { socket } = React.useContext(SocketContext);
     // const { open: openModalAddFriend } = useModal("ModalAddFriend");
     // const { open: openModalStories } = useModal("ModalStories");
+     const[addfriend,setAddFriend]=useState([]);
     const [openModalStories, setOpenModalStories] = useState(false);
     const [inputAddFriend, setInputAddFriend] = useState("");
     const [openModalAddFriend, setOpenModalAddFriend] = useState(false);
@@ -34,6 +35,14 @@ export default function Contact() {
         socket.on("serverBlurTyping", () => {
             setTyping("");
         });
+
+        axios
+            .get(`/api/getlistusers/?userId=${user.id}&page=1`)
+            .then((res) => {
+                setAddFriend([...res.data.data])
+                console.log("abc",res)
+            });
+
         // getUserInfo().then(res => setUser(res.data));
         // axios
         //     .get(`/api/getContact/?userId=${user.id}`)
@@ -66,6 +75,11 @@ export default function Contact() {
         // });
         return () => {};
     }, []);
+
+    const postAddFriend = (id)=>{
+        console.log(id);
+    }
+
     const handleSearch = (e) => {
         setSearch(e.target.value);
     };
@@ -273,18 +287,19 @@ export default function Contact() {
                     />
                 </div>
                 <div className="rounded-box bordered mt-5 text-black flex-row items-center border-4 p-2">
-                    {inputAddFriend.length >= 1 ? (
-                         <div
-                         className="flex items-center w-full p-5 hover:bg-gray-200 rounded-box cursor-pointer">
+                    {/* //{inputAddFriend.length >= 1 ? ( */}
+                   { addfriend &&
+                    addfriend.map((value, index) => (    
+                     <div key={index + value} className="flex items-center w-full p-5 hover:bg-gray-200 rounded-box cursor-pointer" >
                          <div className="avatar online w-12 flex justify-center align-center mr-3 indicator">
                              <div className="rounded-full w-12 h-12">
-                                 <img src="https://s120-ava-talk.zadn.vn/1/4/e/e/11/120/2555995a33d1b8a501d92c135cd05d11.jpg" />
+                                 <img src={value.avatar} />
                              </div>
                          </div>
 
                          <div className="flex flex-col w-full truncate overflow-ellipsis">
                              <div className="truncate font-bold">
-                                Tung
+                              {value.name}
                              </div>
                              <div className="truncate">
                              Friend Suggestions
@@ -292,30 +307,31 @@ export default function Contact() {
                          </div>
 
                          <div className="w-20 mr-3 flex justify-center items-center text-center text-sm">
-                            <a className="btn btn-primary">Add Friend</a>
+                            <a className="btn btn-primary" onClick={()=>postAddFriend(value.id)}>Add Friend</a>
                          </div>
                      </div>
-                    ) : (
-                        <>
-                            <figure className="flex justify-center m-3 items-center">
-                                <img src="../../../images/Add_friends.svg" />
-                            </figure>
-                            <div className="card-body">
-                                <h2 className="card-title">✋ Add Friends</h2>
-                                <p>
-                                    To see Pinwheel in action, you’ll need a few
-                                    more people here. Try inviting some of the
-                                    teammates you talk with most.
-                                </p>
-                            </div>
-                        </>
-                    )}
+                    ))}
+                    {/* // ) : (
+                    //     <>
+                    //         <figure className="flex justify-center m-3 items-center">
+                    //             <img src="../../../images/Add_friends.svg" />
+                    //         </figure>
+                    //         <div className="card-body">
+                    //             <h2 className="card-title">✋ Add Friends</h2>
+                    //             <p>
+                    //                 To see Pinwheel in action, you’ll need a few
+                    //                 more people here. Try inviting some of the
+                    //                 teammates you talk with most.
+                    //             </p>
+                    //         </div>
+                    //     </>
+                    // )} */}
                 </div>
                 <div className="modal-action">
                     <a className="btn btn-primary">Search</a>
                     <a
                         className="btn"
-                        onClick={() => setOpenModalBookmark(false)}
+                        onClick={() => setOpenModalAddFriend(false)}
                     >
                         Close
                     </a>

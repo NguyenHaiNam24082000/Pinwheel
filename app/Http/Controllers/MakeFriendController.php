@@ -37,11 +37,25 @@ class MakeFriendController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function getUsers( Request $request)
     {
-        //
-    }
+        // select users.id from users WHERE users.id not in(select users.id  from users join participants
+        //  on users.id=participants.user_id  join conversation on participants.conversation_id= conversation.id where conversation.id 
+        //  in ( select conversation_id from users join participants on users.id= participants.user_id where users.id=6)  and kind='friend');
+        $conversationId= DB::table('users')->join('participants', 'users.id',"=","participants.user_id")
+        ->where('users.id','=',$request->userId)->select('conversation_id');
 
+        $usersId=DB::table('users')->join('participants', 'users.id',"=","participants.user_id")
+        ->join('conversation','conversation.id','participants.conversation_id')
+        ->whereIn( 'conversation.id',$conversationId)
+        ->where('kind','=','friend')
+        ->select('users.id');
+
+        return DB::table('users') 
+        -> whereNotIn('users.id',$usersId) 
+        ->select('users.id','name','avatar')->paginate(3);
+        // return  $conversationId;
+    }
     /**
      * Store a newly created resource in storage.
      *

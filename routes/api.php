@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\SearchController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MakeFriendController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,3 +32,6 @@ Route::get('participant/getParticipant',[ParticipantController::class, 'show']);
 Route::get('conversation/getConversation',[ConversationController::class, 'show']);
 Route::get('/getContact',[ConversationController::class, 'showContact']);
 Route::get('/search',[SearchController::class, 'searchFriend']);
+Route::get('/getlistusers',[MakeFriendController::class, 'getUsers']);
+Route::post('/postConversation',[MakeFriendController::class, 'postFriendIntoConversation']);
+Route::post('/postPaticipant',[MakeFriendController::class, 'postFriendIntoPaticipant']);
