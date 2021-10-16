@@ -6,6 +6,7 @@ import axios from "axios";
 import { AuthContext } from "../../context/AuthProvider";
 import { AppContext } from "../../context/AppProvider";
 import { SocketContext } from "../../context/socket";
+import $ from "jquery";
 
 export default function Contact() {
     // const [user,setUser]=useState({});
@@ -21,7 +22,7 @@ export default function Contact() {
     const [typing, setTyping] = useState("");
     const [search, setSearch] = useState("");
     const { user } = React.useContext(AuthContext);
-    const { searchContact, conversations, setSelectedConversationId } =
+    const { searchContact, conversations, setSelectedConversationId,setConversations } =
         React.useContext(AppContext);
     useEffect(() => {
         socket.on("serverSendLastData", (dataGot) => {
@@ -75,11 +76,49 @@ export default function Contact() {
         // });
         return () => {};
     }, []);
+    console.log(conversations);
+    const postAddFriend = (id,e)=>{
+       
+       
+         axios.post(`/api/postConversation/?creator_id=${user.id}&kind=friend&title=''`)
+            .then(function (response) {
+                 axios.post(`/api/postPaticipant/?conversation_id=${response.data.makefriend.id}&user_id=${user.id}&title=${user.name}`, {
+                myVar: 'myValue'
+              })
+           
+            const fr=addfriend.find((x)=> x.id ===id) ;
 
-    const postAddFriend = (id)=>{
-        console.log(id);
+              axios.post(`/api/postPaticipant/?conversation_id=${response.data.makefriend.id}&user_id=${id}&title=${fr.name}`, {
+                  myVar: 'myValue'
+                })
+                const postPaticipant={
+                    "kind":"friend",
+                    "alias": fr.name,
+                    "conversation_id": response.data.makefriend.id,
+                    "id":id,
+                    "avatar": fr.avatar,
+                    "title": ""
+
+                }
+                setConversations((conversationList) => [
+                    ...conversationList,
+                   postPaticipant,
+                ]);
+                
+                $(`.btn-${id}`).text('đã kết bạn');
+                
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
     }
-
+   const getSearchAddFriend=(keySearch)=>{
+    axios.get(`/api/searchInAddfriend/?userId=${user.id}&name=${keySearch}`)
+    .then((res) => {
+       // setAddFriend([...res.data.data])
+        console.log(res)
+    });
+   }
     const handleSearch = (e) => {
         setSearch(e.target.value);
     };
@@ -307,28 +346,13 @@ export default function Contact() {
                          </div>
 
                          <div className="w-20 mr-3 flex justify-center items-center text-center text-sm">
-                            <a className="btn btn-primary" onClick={()=>postAddFriend(value.id)}>Add Friend</a>
+                            <a className={`btn btn-primary btn-${value.id}`} onClick={(e)=>postAddFriend(value.id,e)}>Add Friend</a>
                          </div>
                      </div>
                     ))}
-                    {/* // ) : (
-                    //     <>
-                    //         <figure className="flex justify-center m-3 items-center">
-                    //             <img src="../../../images/Add_friends.svg" />
-                    //         </figure>
-                    //         <div className="card-body">
-                    //             <h2 className="card-title">✋ Add Friends</h2>
-                    //             <p>
-                    //                 To see Pinwheel in action, you’ll need a few
-                    //                 more people here. Try inviting some of the
-                    //                 teammates you talk with most.
-                    //             </p>
-                    //         </div>
-                    //     </>
-                    // )} */}
                 </div>
                 <div className="modal-action">
-                    <a className="btn btn-primary">Search</a>
+                    <a className="btn btn-primary" onClick={() => getSearchAddFriend(keySearch)}>Search</a>
                     <a
                         className="btn"
                         onClick={() => setOpenModalAddFriend(false)}

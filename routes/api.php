@@ -35,3 +35,4 @@ Route::get('/search',[SearchController::class, 'searchFriend']);
 Route::get('/getlistusers',[MakeFriendController::class, 'getUsers']);
 Route::post('/postConversation',[MakeFriendController::class, 'postFriendIntoConversation']);
 Route::post('/postPaticipant',[MakeFriendController::class, 'postFriendIntoPaticipant']);
+Route::get('/searchInAddfriend',[MakeFriendController::class, 'searchFriendToAdd']);

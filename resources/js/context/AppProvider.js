@@ -45,8 +45,7 @@ export default function AppProvider({ children }) {
                 });
             })
             .catch(function (error) {
-                // handle error
-                console.log("search");
+                
                 console.log(error);
             });
     };
@@ -62,6 +61,7 @@ export default function AppProvider({ children }) {
     return (
         <AppContext.Provider
             value={{
+               
                 searchContact,
                 conversations,
                 selectedConversation,
