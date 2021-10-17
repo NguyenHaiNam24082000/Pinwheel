@@ -113,10 +113,12 @@ export default function Contact() {
             });
     }
    const getSearchAddFriend=(keySearch)=>{
+    setAddFriend([]);
+    
     axios.get(`/api/searchInAddfriend/?userId=${user.id}&name=${keySearch}`)
     .then((res) => {
-       // setAddFriend([...res.data.data])
-        console.log(res)
+       setAddFriend([...res.data])
+      
     });
    }
     const handleSearch = (e) => {
@@ -352,7 +354,7 @@ export default function Contact() {
                     ))}
                 </div>
                 <div className="modal-action">
-                    <a className="btn btn-primary" onClick={() => getSearchAddFriend(keySearch)}>Search</a>
+                    <a className="btn btn-primary" onClick={() => getSearchAddFriend(inputAddFriend)}>Search</a>
                     <a
                         className="btn"
                         onClick={() => setOpenModalAddFriend(false)}
