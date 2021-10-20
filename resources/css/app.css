@@ -1440,3 +1440,28 @@
         transform: scale(1) translateY(0);
     }
 }
+
+/* .person
+{
+    background-color: transparent;
+    position: absolute;
+    /* height: auto; */
+    /* z-index: 9999;
+    margin: auto;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    -moz-transform: scale(-1, 1);
+    -webkit-transform: scale(-1, 1);
+    -o-transform: scale(-1, 1);
+    transform: scale(-1, 1);
+    filter: FlipH;
+} */
+
+.turky {
+  background-image: url("../images/turky.jpg");
+  background-size: cover;
+}

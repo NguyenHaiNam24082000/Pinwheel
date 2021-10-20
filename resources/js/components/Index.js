@@ -5,7 +5,7 @@ import { Route, Switch, BrowserRouter } from "react-router-dom";
 import Login from "./Login";
 import Register from "./Register";
 import AvatarMaker from "./Avatar";
-import VideoCall from "./VideoCall";
+import VideoCall from "./VideoCall/VideoCall";
 import toast, { Toaster } from "react-hot-toast";
 import { BiWifiOff, BiWifi } from "react-icons/bi";
 import AuthProvider from "../context/AuthProvider";
