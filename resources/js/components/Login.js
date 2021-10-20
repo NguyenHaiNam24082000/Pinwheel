@@ -4,7 +4,7 @@ import { FcGoogle } from "react-icons/fc";
 import socialMediaAuth from "../context/Auth";
 import {postNewUser} from "../context/UserProvider";
 import ReCAPTCHA from "react-google-recaptcha";
-import { FacebookAuthProvider, GoogleAuthProvider  } from "firebase/auth";
+import { FacebookAuthProvider, GoogleAuthProvider ,signInWithEmailAndPassword } from "firebase/auth";
 import {useHistory} from "react-router-dom";
 const axios = require("axios").default;
 
@@ -51,6 +51,16 @@ export default function Login() {
     function onChangeReCAPTCHA(value) {
         console.log("Captcha value:", value);
         setCheckReCAPTCHA(true);
+    }
+    const  login =async()=>{
+        try{
+           
+          const user= await signInWithEmailAndPassword(auth,email,password);
+          console.log(user);
+          
+          }catch(errors){
+     console.log(errors.message)
+          }
     }
 
     return (
@@ -144,6 +154,7 @@ export default function Login() {
                                     className=" p-4 mb-4 border font-bold rounded-full text-sm lg:w-2/5 border-white"
                                     disabled={!checkReCAPTCHA}
                                     type="submit"
+                                    onClick={()=>login()}
                                 >
                                     Sign in
                                 </button>

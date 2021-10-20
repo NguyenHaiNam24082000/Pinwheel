@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import {postNewUser} from "../context/UserProvider";
 import socialMediaAuth from "../context/Auth";
 import ReCAPTCHA from "react-google-recaptcha";
-import { FacebookAuthProvider, GoogleAuthProvider } from "firebase/auth";
+import { FacebookAuthProvider, GoogleAuthProvider ,createUserWithEmailAndPassword} from "firebase/auth";
 import { useHistory } from "react-router-dom";
+import {auth} from '../firebase';
 import "react-focus-rings/src/styles.css";
 const axios = require("axios").default;
 import * as Yup from "yup";
@@ -16,10 +18,10 @@ export default function Register() {
     const [password,setPassword] = useState("");
     const [error,setError]= useState({})
     const validationSchema = Yup.object().shape({
-        email: Yup.string().email("Email is invalid").required("This field is required"),
-        password: Yup.string().min(8,"Must be 8 characters or more").matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/g,"Must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number").required("This field is required"),
-        username: Yup.string().min(6,"Must be 6 characters or more").required("This field is required"),
-        name: Yup.string().min(8).max(50).required("This field is required")
+    //     email: Yup.string().email("Email is invalid").required("This field is required"),
+    //     password: Yup.string().min(8,"Must be 8 characters or more").matches(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/g,"Must contain at least 1 uppercase letter, 1 lowercase letter, and 1 number").required("This field is required"),
+    //     username: Yup.string().min(6,"Must be 6 characters or more").required("This field is required"),
+    //     name: Yup.string().min(8).max(50).required("This field is required")
     })
     const onChangeReCAPTCHA = (value) => {
         console.log(value)
@@ -27,27 +29,31 @@ export default function Register() {
 
     };
     const onHandleSubmit = async (event) => {
+        const user= await createUserWithEmailAndPassword(auth,email,password);
         event.preventDefault();
         const initialsValue={
-            name: name,
+            name: username,
             email: email,
             username: username,
             password: password,
+            avatar: "",
+            phone:"",
         };
+       
         const isValid=await validationSchema.isValid(initialsValue);
-        if(isValid) {
+        // if(isValid) {
             await axios
             .post("/api/user/post",initialsValue)
             .then(function (response) {
-                // handle success
+                console.log("ré",response);
+                history.push("/");
                 
-                console.log(response);
             })
             .catch(function (error) {
                 // handle error
                 console.log(error);
             });
-        }
+       // }
     };
     const onHandleChangeEmail = (e) => {
         setEmail(e.target.value);
@@ -64,6 +70,22 @@ export default function Register() {
     const onHandleLogin = ()=>{
         history.push("/login");
     }
+    // const  register =async()=>{
+    //     try{
+        
+    //       postNewUser({
+    //         username: email,
+    //         email: email,
+    //         name: username,
+    //         avatar: '',
+    //         password: password,
+    //         phone: '',
+    //     })
+    //       history.push("/");
+    //       }catch(errors){
+    //  console.log(errors.message)
+    //       }
+    //}
     return (
         <main className="flex flex-col h-screen bg-black w-full">
             <div className="grid grid-cols-1 md:grid-cols-2">
@@ -228,6 +250,7 @@ export default function Register() {
                                     className=" p-4 mb-4 font-bold rounded-full text-sm lg:w-2/5 text-black bg-white"
                                     disabled={!checkReCAPTCHA}
                                     type="submit"
+                                    onClick={() => register()}
                                 >
                                     Sign up
                                 </button>
