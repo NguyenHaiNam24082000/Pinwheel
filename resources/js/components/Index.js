@@ -5,14 +5,14 @@ import { Route, Switch, BrowserRouter } from "react-router-dom";
 import Login from "./Login";
 import Register from "./Register";
 import AvatarMaker from "./Avatar";
-import VideoCall from "./VideoCall";
+import VideoCall from "./VideoCall/VideoCall";
 import toast, { Toaster } from "react-hot-toast";
 import { BiWifiOff, BiWifi } from "react-icons/bi";
 import AuthProvider from "../context/AuthProvider";
 import AppProvider from "../context/AppProvider";
 // import modals from "./Modals";
 // import { ModalProvider } from "react-simple-modal-provider";
-import PaintChanel from "./ChatArea/PaintChanel";
+import PaintChanel from "./ChatArea/Chanels/PaintChanel";
 
 function Index() {
     let isOnline = true;
