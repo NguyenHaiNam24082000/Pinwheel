@@ -27,6 +27,7 @@ export default function AppProvider({ children }) {
         return () => {};
     }, []);
     const searchContact = async (st) => {
+        setConversations([]);
         await axios
             .get(`api/search/?title=${st}&userId=${user.id}`)
             .then(function (response) {

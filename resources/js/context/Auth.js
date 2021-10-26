@@ -1,5 +1,5 @@
 import {auth} from '../firebase';
-import {signInWithPopup,getAdditionalUserInfo } from "firebase/auth";
+import {signInWithPopup,getAdditionalUserInfo,createUserWithEmailAndPassword } from "firebase/auth";
 
 const socialMediaAuth = (provider) => {
     return signInWithPopup(auth, provider)
@@ -11,4 +11,14 @@ const socialMediaAuth = (provider) => {
     });
 }
 
-export default socialMediaAuth;
+const registerAuth=(email, password) => {
+  return createUserWithEmailAndPassword(auth, email, password)
+    .then((result) => {
+      const additionalUserInfo = getAdditionalUserInfo(result);
+      return {additionalUserInfo,result};
+    }).catch((error) => {
+      return error;
+    });
+}
+
+export {socialMediaAuth,registerAuth};

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\SearchController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MakeFriendController;
 
 /*
 |--------------------------------------------------------------------------
@@ -25,9 +26,15 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::get('chat',[MessageController::class, 'index']);
 Route::post('chat/post',[MessageController::class, 'postSendMessage']);
+Route::get('chat/get',[MessageController::class, 'show']);
 Route::post('user/post',[UserController::class, 'store']);
 Route::get('user/getInfo',[UserController::class, 'show']);
 Route::get('participant/getParticipant',[ParticipantController::class, 'show']);
 Route::get('conversation/getConversation',[ConversationController::class, 'show']);
+Route::get('conversation/getUsers',[ConversationController::class, 'showUsers']);
 Route::get('/getContact',[ConversationController::class, 'showContact']);
 Route::get('/search',[SearchController::class, 'searchFriend']);
+Route::get('/getlistusers',[MakeFriendController::class, 'getUsers']);
+Route::post('/postConversation',[MakeFriendController::class, 'postFriendIntoConversation']);
+Route::post('/postPaticipant',[MakeFriendController::class, 'postFriendIntoPaticipant']);
+Route::get('/searchInAddfriend',[MakeFriendController::class, 'searchFriendToAdd']);

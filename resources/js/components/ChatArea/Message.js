@@ -6,6 +6,22 @@ import ContentLoader from "react-content-loader";
 import Media from "../Media";
 import ContextMenuChat from "../ContextMenu/ContextMenuChat";
 import { RoughNotation, RoughNotationGroup } from "react-rough-notation";
+import { formatRelative } from "date-fns/esm";
+import { Code } from "@mantine/core";
+import { Prism } from "@mantine/prism";
+
+function formatDate(seconds) {
+    let formattedDate = "";
+
+    if (seconds) {
+        formattedDate = formatRelative(new Date(seconds * 1000), new Date());
+
+        formattedDate =
+            formattedDate.charAt(0).toUpperCase() + formattedDate.slice(1);
+    }
+
+    return formattedDate;
+}
 
 export default function Message({
     userId,
@@ -14,6 +30,8 @@ export default function Message({
     content,
     avatar,
     name,
+    images,
+    time,
 }) {
     const [active, setActive] = React.useState(false),
         [position, setPosition] = React.useState({ x: 0, y: 0 });
@@ -42,7 +60,7 @@ export default function Message({
         underlineBold: /__\*\*(.*?)\*\*__/gs,
         underlineBoldItalics: /__\*\*\*(.*?)\*\*\*__/gs,
         strikethrough: /~~(.*?)~~/gs,
-        codeMultiline: /```(.*?)```/gm,
+        codeMultiline: /```(.*)```/gm,
         codeLine: /`(.*?)`/gs,
         blockQuoteMultiline: />>> (.*)/gs,
         blockQuoteLine: /^> (.*)$/gm,
@@ -72,7 +90,8 @@ export default function Message({
             // FIXME: don't add message formatting in a code block
             .replace(
                 patterns.codeLine,
-                '<div class="mockup-code bg-primary text-primary-content mt-3 w-full"><pre data-prefix=">"><code class="facade">$1</code></pre></div>'
+                // '<div class="mockup-code bg-primary text-primary-content mt-3 w-full"><pre data-prefix=">"><code class="facade">$1</code></pre></div>'
+                "<Code block>$1</Code>"
             )
             .replace(
                 patterns.blockQuoteLine,
@@ -273,15 +292,25 @@ export default function Message({
                 patterns.codeMultiline,
                 (match, i) => (
                     // <a key={match + i} href={match}>{match}</a>
-                    <pre data-prefix=">" key={match + i}>
-                        <code className="facade">{match}</code>
-                    </pre>
+                    // <pre data-prefix=">" key={match + i}>
+                    //     <code className="facade">{match}</code>
+                    // </pre>
+                    // <Code block key={match + i}>{match}</Code>
+                    <Prism
+                        language="js"
+                        copyLabel="Copy code to clipboard"
+                        copiedLabel="Code copied to clipboard"
+                        key={match + i}
+                        withLineNumbers 
+                    >
+                        {match}
+                    </Prism>
                 )
             );
             return (
-                <div className="mockup-code bg-primary text-primary-content mt-3 w-full">
-                    {replaceString}
-                </div>
+                // <div className="mockup-code bg-primary text-primary-content mt-3 w-full">
+                <>{replaceString}</>
+                // </div>
             );
         }
         if (bracket !== null) {
@@ -295,8 +324,8 @@ export default function Message({
                         type="bracket"
                         color="red"
                         padding={[2, 10]}
-                        brackets={['left', 'right']}
-                        strokeWidth= {3}
+                        brackets={["left", "right"]}
+                        strokeWidth={3}
                     >
                         {match}
                     </RoughNotation>
@@ -304,7 +333,7 @@ export default function Message({
             );
             return <>{replaceString}</>;
         }
-        if(circle !==null) {
+        if (circle !== null) {
             let replaceString = reactStringReplace(
                 content,
                 patterns.circle,
@@ -385,11 +414,25 @@ export default function Message({
             >
                 <div className="flex justify-between w-full">
                     <div className="font-bold w-full">{name}</div>
-                    <div>24:00</div>
+                    <div>{formatDate(time)}</div>
                 </div>
                 <RoughNotationGroup show={true}>
                     <div className={`${effect} whitespace-pre-wrap`}>
                         {normalizeContent(content)}
+                        {images &&
+                            images.map((value, index) => (
+                                <div
+                                    key={index + value}
+                                    className="inline-block ml-3 mt-3 rounded-box relative"
+                                    style={{ width: "108px", height: "108px" }}
+                                >
+                                    <i className="far fa-times-circle absolute top-2 right-2 cursor-pointer"></i>
+                                    <img
+                                        src={value}
+                                        className="w-full h-full rounded-box"
+                                    ></img>
+                                </div>
+                            ))}
                         {content.match(/(https?:\/\/\S+)/g) &&
                             content
                                 .match(/(https?:\/\/\S+)/g)
@@ -400,7 +443,7 @@ export default function Message({
                                         render={CustomComponent}
                                     />
                                 ))}
-                        {/* <Media url={"../../assets/sounds/music/cat-walk.mp3"}/> */}
+                        {/* <Media url={"../../assets/sounds/music/cat-walk.mp3"} /> */}
                         {/* <div className="mockup-code bg-primary text-primary-content mt-3">
                         <pre>
                             <code>can be any color!</code>
