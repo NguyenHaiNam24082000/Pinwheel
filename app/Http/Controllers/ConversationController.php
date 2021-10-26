@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Conversation;
+use Illuminate\Support\Facades\DB;
 
 class ConversationController extends Controller
 {
@@ -60,6 +61,18 @@ class ConversationController extends Controller
         //
         $conversation = Conversation::where('id', $request->id)->get();
         return $conversation;
+    }
+
+    public function showUsers(Request $request)
+    {
+        //
+        $conversation = DB::table('conversation')->join('participants','participants.conversation_id','=','conversation.id')
+        ->join('users','users.id','=','participants.user_id')
+        ->where('conversation.id',"=", $request->conversation_id)->select('users.id','users.name','avatar')->get();
+        return $conversation;
+        //SELECT users.id,users.name,avatar from conversation join participants on conversation.id = 
+        //participants.conversation_id 
+        //join users on users.id= participants.user_id WHERE conversation.id='200000000000001';
     }
 
     /**

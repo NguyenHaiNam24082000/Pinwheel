@@ -1,25 +1,113 @@
 import React, { useState } from "react";
 import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
-import socialMediaAuth from "../context/Auth";
-import {postNewUser} from "../context/UserProvider";
+import { socialMediaAuth } from "../context/Auth";
+import { postNewUser } from "../context/UserProvider";
 import ReCAPTCHA from "react-google-recaptcha";
-import { FacebookAuthProvider, GoogleAuthProvider  } from "firebase/auth";
-import {useHistory} from "react-router-dom";
-const axios = require("axios").default;
+import {
+    FacebookAuthProvider,
+    GoogleAuthProvider,
+    signInWithEmailAndPassword,
+} from "firebase/auth";
+import { useHistory } from "react-router-dom";
+import { CheckIcon, Cross1Icon } from "@modulz/radix-icons";
+import { MailIcon, LockIcon  } from "@primer/octicons-react";
+import { PasswordInput, Progress, Text, Popover,TextInput } from "@mantine/core";
+
+function PasswordRequirement({ meets, label }) {
+    return (
+        <Text
+            color={meets ? "teal" : "red"}
+            style={{ display: "flex", alignItems: "center", marginTop: 7 }}
+            size="sm"
+        >
+            {meets ? <CheckIcon /> : <Cross1Icon />}{" "}
+            <span style={{ marginLeft: 10 }}>{label}</span>
+        </Text>
+    );
+}
+
+function EmailRequirement({ meets, label }) {
+    return (
+        <Text
+            color={meets ? "teal" : "red"}
+            style={{ display: "flex", alignItems: "center", marginTop: 7 }}
+            size="sm"
+        >
+            {meets ? <CheckIcon /> : <Cross1Icon />}{" "}
+            <span style={{ marginLeft: 10 }}>{label}</span>
+        </Text>
+    );
+}
+
+const requirementsPassword = [
+    { re: /[0-9]/, label: "Includes number" },
+    { re: /[a-z]/, label: "Includes lowercase letter" },
+    { re: /[A-Z]/, label: "Includes uppercase letter" },
+    { re: /[$&+,:;=?@#|'<>.^*()%!-]/, label: "Includes special symbol" },
+];
+
+const requirementsEmail = [
+    { re: /^\S+@\S+$/, label: "Must be email" },
+];
+
+
+function getStrengthPassword(password) {
+    let multiplier = password.length > 5 ? 0 : 1;
+
+    requirementsPassword.forEach((requirement) => {
+        if (!requirement.re.test(password)) {
+            multiplier += 1;
+        }
+    });
+
+    return Math.max(100 - (100 / (requirementsPassword.length + 1)) * multiplier, 10);
+}
+
+function getStrengthEmail(email) {
+    let multiplier = email.length > 5 ? 0 : 1;
+
+    requirementsEmail.forEach((requirement) => {
+        if (!requirement.re.test(email)) {
+            multiplier += 1;
+        }
+    });
+
+    return Math.max(100 - (100 / (requirementsEmail.length + 1)) * multiplier, 10);
+}
 
 export default function Login() {
     const history = useHistory();
     const facebookAuth = new FacebookAuthProvider();
     const googleAuth = new GoogleAuthProvider();
     const [checkReCAPTCHA, setCheckReCAPTCHA] = useState(false);
-    const [email,setEmail] = useState("");
-    const [password,setPassword] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [popoverOpenedPassword, setPopoverOpenedPassword] = useState(false);
+    const [popoverOpenedEmail, setPopoverOpenedEmail] = useState(false);
+    const checksPassword = requirementsPassword.map((requirement, index) => (
+        <PasswordRequirement
+            key={index}
+            label={requirement.label}
+            meets={requirement.re.test(password)}
+        />
+    ));
+    const checksEmail = requirementsEmail.map((requirement, index) => (
+        <EmailRequirement
+            key={index}
+            label={requirement.label}
+            meets={requirement.re.test(email)}
+        />
+    ));
+
+    const strengthPassword = getStrengthPassword(password);
+    const strengthEmail = getStrengthEmail(email);
+    const colorPassword = strengthPassword === 100 ? "teal" : strengthPassword > 50 ? "yellow" : "red";
+    const colorEmail = strengthEmail === 100 ? "teal" : strengthEmail > 50 ? "yellow" : "red";
 
     const handleOnClick = async (provider) => {
-        const {additionalUserInfo,result} = await socialMediaAuth(provider);
-        if(additionalUserInfo.isNewUser)
-        {
+        const { additionalUserInfo, result } = await socialMediaAuth(provider);
+        if (additionalUserInfo.isNewUser) {
             postNewUser({
                 username: result.user.email,
                 email: result.user.email,
@@ -27,26 +115,33 @@ export default function Login() {
                 avatar: result.user.photoURL,
                 password: "",
                 phone: result.user.phoneNumber,
-            })
-        }
-        else
-        { 
-            console.log("old user",result)
+            });
+        } else {
+            console.log("old user", result);
         }
         history.push("/");
     };
 
-    const onHandleSubmit = ()=>{
+    const onHandleSubmit = async () => {
+        try {
+            const user = await signInWithEmailAndPassword(
+                auth,
+                email,
+                password
+            );
+            console.log(user);
+        } catch (errors) {
+            console.log(errors.message);
+        }
+    };
 
-    }
-
-    const onHandleChangeEmail = (e)=>{
+    const onHandleChangeEmail = (e) => {
         setEmail(e.target.value);
-    }
+    };
 
-    const onHandleChangePassword = (e)=>{
+    const onHandleChangePassword = (e) => {
         setPassword(e.target.value);
-    }
+    };
 
     function onChangeReCAPTCHA(value) {
         console.log("Captcha value:", value);
@@ -91,37 +186,121 @@ export default function Login() {
                             </button>
                         </div>
                         <div className="divider">OR</div>
-                        <form className="flex flex-col" onSubmit={onHandleSubmit}>
+                        <form
+                            className="flex flex-col"
+                            onSubmit={onHandleSubmit}
+                        >
                             <div className="form-control">
                                 <label className="label">
                                     <span className="label-text">
                                         Username/Email:
                                     </span>
                                 </label>
-                                <input
+                                <Popover
+                                    opened={popoverOpenedEmail}
+                                    position="bottom"
+                                    placement="start"
+                                    withArrow
+                                    styles={{ popover: { width: "300px" } }}
+                                    noFocusTrap
+                                    transition="pop-top-left"
+                                    onFocusCapture={() =>
+                                        setPopoverOpenedEmail(true)
+                                    }
+                                    onBlurCapture={() =>
+                                        setPopoverOpenedEmail(false)
+                                    }
+                                    target={
+                                        <TextInput
+                                            required
+                                            placeholder="Your Email"
+                                            icon={<MailIcon />}
+                                            value={email}
+                                            onChange={(event) =>
+                                                setEmail(
+                                                    event.currentTarget.value
+                                                )
+                                            }
+                                        />
+                                    }
+                                >
+                                    <Progress
+                                        color={colorEmail}
+                                        value={strengthEmail}
+                                        size={5}
+                                        style={{ marginBottom: 10 }}
+                                    />
+                                    <EmailRequirement
+                                        label="Includes at least 6 characters"
+                                        meets={email.length > 5}
+                                    />
+                                    {checksEmail}
+                                </Popover>
+                                {/* <input
                                     type="text"
                                     placeholder="Username/Email"
                                     className="input input-bordered"
                                     onChange={onHandleChangeEmail}
                                     value={email}
-                                />
+                                /> */}
                                 <label className="label">
                                     <span className="label-text">
                                         Password:
                                     </span>
                                 </label>
-                                <input
+                                {/* <input
                                     type="password"
                                     placeholder="Password"
                                     className="input input-bordered"
                                     onChange={onHandleChangePassword}
                                     value={password}
-                                />
+                                /> */}
+                                <Popover
+                                    opened={popoverOpenedPassword}
+                                    position="bottom"
+                                    placement="start"
+                                    withArrow
+                                    styles={{ popover: { width: "300px" } }}
+                                    noFocusTrap
+                                    transition="pop-top-left"
+                                    onFocusCapture={() =>
+                                        setPopoverOpenedPassword(true)
+                                    }
+                                    onBlurCapture={() =>
+                                        setPopoverOpenedPassword(false)
+                                    }
+                                    target={
+                                        <PasswordInput
+                                            required
+                                            icon={<LockIcon />}
+                                            placeholder="Your password"
+                                            value={password}
+                                            onChange={(event) =>
+                                                setPassword(
+                                                    event.currentTarget.value
+                                                )
+                                            }
+                                        />
+                                    }
+                                >
+                                    <Progress
+                                        color={colorPassword}
+                                        value={strengthPassword}
+                                        size={5}
+                                        style={{ marginBottom: 10 }}
+                                    />
+                                    <PasswordRequirement
+                                        label="Includes at least 6 characters"
+                                        meets={password.length > 5}
+                                    />
+                                    {checksPassword}
+                                </Popover>
                                 <label className="label p-0 mt-3">
                                     <label className="label p-0">
                                         <input
                                             type="checkbox"
                                             className="checkbox checkbox-sm border-white mr-3"
+                                            style={{ display: "inline-block" }}
                                         />
                                         <span className="label-text">
                                             Remember me
@@ -144,10 +323,14 @@ export default function Login() {
                                     className=" p-4 mb-4 border font-bold rounded-full text-sm lg:w-2/5 border-white"
                                     disabled={!checkReCAPTCHA}
                                     type="submit"
+                                    // onClick={()=>login()}
                                 >
                                     Sign in
                                 </button>
-                                <button className=" p-4 mb-4 font-bold rounded-full text-sm lg:w-2/5 text-black bg-white" onClick={()=>history.push("/register")}>
+                                <button
+                                    className=" p-4 mb-4 font-bold rounded-full text-sm lg:w-2/5 text-black bg-white"
+                                    onClick={() => history.push("/register")}
+                                >
                                     Sign up
                                 </button>
                             </div>
@@ -160,23 +343,23 @@ export default function Login() {
                 >
                     <div
                         className="bg-cover bg-no-repeat h-full bg-center"
-                        style={{
-                            backgroundImage:
-                                // "url(../../images/plannet.gif)",
-                                "url(../../images/logo.gif)",
-                            // "url(https://source.unsplash.com/random)",
-                        }}
+                        // style={{
+                        //     backgroundImage:
+                        //         // "url(../../images/plannet.gif)",
+                        //         "url(../../images/logo.gif)",
+                        //     // "url(https://source.unsplash.com/random)",
+                        // }}
                     >
-                        {/* <video src={`../../images/background/bg_video_${Math.floor(Math.random()*12)}.mp4`} autoPlay muted loop className="w-full h-full"></video> */}
+                        <video src={`../../images/background/bg_video_${Math.floor(Math.random()*12)}.mp4`} autoPlay muted loop className="w-full h-full"></video>
                         {/* <div className="flex justify-center items-center h-full">
                             <img src="../../images/logo.svg" />
                         </div> */}
                     </div>
                 </div>
             </div>
-            <nav className="p-2">
-                <ul className="flex flex-wrap justify-center">
-                    <li className="text-xs text-gray-500 mx-2 my-1">
+            <div className="p-2 w-full">
+                <ul className="flex flex-wrap justify-around">
+                    {/* <li className="text-xs text-gray-500 mx-2 my-1">
                         <a
                             className="border-b-2 border-transparent hover:border-gray-400"
                             href="https://www.freepik.com/vectors/design"
@@ -184,7 +367,7 @@ export default function Login() {
                             Design vector created by coolvector -
                             www.freepik.com
                         </a>
-                    </li>
+                    </li> */}
                     <li className="text-xs text-gray-500 mx-2 my-1">
                         <a
                             className="border-b-2 border-transparent hover:border-gray-400"
@@ -282,7 +465,7 @@ export default function Login() {
                         </a>
                     </li>
                 </ul>
-            </nav>
+            </div>
         </main>
     );
 }

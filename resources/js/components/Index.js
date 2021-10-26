@@ -13,6 +13,7 @@ import AppProvider from "../context/AppProvider";
 // import modals from "./Modals";
 // import { ModalProvider } from "react-simple-modal-provider";
 import PaintChanel from "./ChatArea/Chanels/PaintChanel";
+import { MantineProvider } from "@mantine/core";
 
 function Index() {
     let isOnline = true;
@@ -120,35 +121,37 @@ function Index() {
     );
     return (
         <BrowserRouter>
-            <AuthProvider>
-                <AppProvider>
-                    {/* <ModalProvider value={modals}> */}
+            <MantineProvider theme={{ colorScheme: "dark" }}>
+                <AuthProvider>
+                    <AppProvider>
+                        {/* <ModalProvider value={modals}> */}
                         <Switch>
                             <Route component={Register} path="/register" />
                             <Route component={Login} path="/login" />
                             <Route component={AvatarMaker} path="/avatar" />
                             <Route component={PaintChanel} path="/paint" />
                             <Route component={VideoCall} path="/videocall" />
-                                <Route exact path="/">
-                                    <div
-                                        className="w-full flex h-full bg-base-100 text-base-content"
-                                        data-theme={theme}
-                                    >
-                                        <Sidebar
-                                            setThemeMode={setThemeMode}
-                                            theme={theme}
-                                        />
-                                        <ChatArea />
-                                        <Toaster
-                                            position="top-center"
-                                            reverseOrder={false}
-                                        />
-                                    </div>
-                                </Route>
+                            <Route exact path="/">
+                                <div
+                                    className="w-full flex h-full bg-base-100 text-base-content"
+                                    data-theme={theme}
+                                >
+                                    <Sidebar
+                                        setThemeMode={setThemeMode}
+                                        theme={theme}
+                                    />
+                                    <ChatArea />
+                                    <Toaster
+                                        position="top-center"
+                                        reverseOrder={false}
+                                    />
+                                </div>
+                            </Route>
                         </Switch>
-                    {/* </ModalProvider> */}
-                </AppProvider>
-            </AuthProvider>
+                        {/* </ModalProvider> */}
+                    </AppProvider>
+                </AuthProvider>
+            </MantineProvider>
         </BrowserRouter>
     );
 }

@@ -35,14 +35,14 @@ class SearchController extends Controller
         // ->whereIn('conversation.id',$conversation_id)
         // -> select('users.id','conversation.title','participants.title as alias','kind','avatar','conversation.id as conversationId')->get();
 		$conversation_id= DB::table('users')->join('participants', 'users.id',"=","participants.user_id")
-				->where('users.id','=',$request->userId)->select('conversation_id');
-				return DB::table('users')->join('participants', 'users.id',"=","participants.user_id")
-				->join('conversation', 'participants.conversation_id','=','conversation.id')
-				->whereIn('conversation.id',$conversation_id)
-				->where(function($query) use ($str){
-					$query->where('conversation.title', 'LIKE', '%'.$str.'%')
-						  ->orWhere('participants.title', 'LIKE', '%'.$str.'%');
-						})
-				-> select('users.id','conversation.title','participants.title as alias','kind','avatar','conversation.id as conversationId')->get();
+		->where('users.id','=',$request->userId)->select('conversation_id');
+		return DB::table('users')->join('participants', 'users.id',"=","participants.user_id")
+		->join('conversation', 'participants.conversation_id','=','conversation.id')
+		->whereIn('conversation.id',$conversation_id)
+		->where(function($query) use ($str){
+			$query->where('conversation.title', 'LIKE', '%'.$str.'%')
+				  ->orWhere('participants.title', 'LIKE', '%'.$str.'%');
+				})
+		-> select('users.id','conversation.title','participants.title as alias','kind','avatar','conversation.id as conversationId')->get();
     }
 }

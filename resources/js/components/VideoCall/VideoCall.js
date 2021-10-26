@@ -1,9 +1,16 @@
 import React, { useRef, useEffect, useState } from "react";
-import Controls from "./Controls";
+// import Controls from "./Controls";
 import "@tensorflow/tfjs-core";
 import "@tensorflow/tfjs-converter";
 import "@tensorflow/tfjs-backend-webgl";
 import * as bodyPix from "@tensorflow-models/body-pix";
+import { MdCallEnd, MdStopScreenShare, MdScreenShare } from "react-icons/md";
+import {
+    BsFillMicFill,
+    BsFillMicMuteFill,
+    BsCameraVideoFill,
+} from "react-icons/bs";
+import Timer from "./Timer";
 
 export default function VideoCall() {
     const width = useRef(window.innerWidth / 2.1);
@@ -17,6 +24,46 @@ export default function VideoCall() {
     //     multiplier: 1,
     //     quantBytes: 2,
     // });
+    const [streamState, setStreamState] = useState({
+        mic: true,
+        video: false,
+        screen: false,
+        endCall: false,
+    });
+    const micClick = () => {
+        setStreamState((currentState) => {
+            return {
+                ...currentState,
+                mic: !currentState.mic,
+            };
+        });
+    };
+    const onVideoClick = () => {
+        setStreamState((currentState) => {
+            return {
+                ...currentState,
+                video: !currentState.video,
+            };
+        });
+    };
+    const onScreenClick = () => {
+        // props.onScreenClick(setScreenState);
+        setScreenState(!streamState.screen);
+    };
+    const setScreenState = (isEnabled) => {
+        setStreamState((currentState) => {
+            return {
+                ...currentState,
+                screen: isEnabled,
+            };
+        });
+    };
+    //   useEffect(() => {
+    //     props.onMicClick(streamState.mic);
+    //   }, [streamState.mic]);
+    //   useEffect(() => {
+    //     props.onVideoClick(streamState.video);
+    //   }, [streamState.video]);
 
     useEffect(() => {
         // bodyPix.load().then((net) => {
@@ -55,7 +102,7 @@ export default function VideoCall() {
             context.globalCompositeOperation = "destination-out";
             context.drawImage(tempCanvas, 0, 0, canvas.width, canvas.height);
             context.restore();
-          })();
+        })();
     };
 
     const clickHandler = async (className) => {
@@ -67,15 +114,15 @@ export default function VideoCall() {
         context.clearRect(0, 0, canvas.width, canvas.height);
         canvas.classList.add(className);
         if (bodypixnet) {
-          drawimage(webcam, context, canvas);
+            drawimage(webcam, context, canvas);
         }
-      };
-      clickHandler("turkey")
+    };
+    clickHandler("turky");
 
     return (
         <div className="flex flex-col w-full overflow-hidden relative">
             <div
-                className="grid w-full h-full gap-1 overflow-y-auto"
+                className="grid w-full h-full gap-1 overflow-y-auto overflow-x-hidden"
                 style={{
                     gridTemplateColumns: `repeat(auto-fit,minmax(${width.current}px,1fr))`,
                     height: "calc(100% - 80px)",
@@ -98,11 +145,77 @@ export default function VideoCall() {
                     ></video>
                     <canvas
                         ref={canvasRef}
-                        className="person w-full h-full"
+                        className="absolute w-full h-full"
                     ></canvas>
                 </div>
             </div>
-            <Controls />
+            <div className="h-20 w-full flex justify-between items-center absolute bottom-0 left-0 bg-gray-500">
+                <div><Timer/></div>
+                <div>
+                    <div
+                        className={`btn rounded-box mx-1 ${
+                            streamState.mic ? "" : "bg-red-500 hover:bg-red-600"
+                        } `}
+                        // className={
+                        //     "meeting-icons " + (!streamState.mic ? "active" : "")
+                        // }
+                        data-tip={
+                            streamState.mic ? "Mute Audio" : "Unmute Audio"
+                        }
+                        onClick={micClick}
+                    >
+                        {/* <FontAwesomeIcon
+                    icon={!streamState.mic ? faMicrophoneSlash : faMicrophone}
+                    title="Mute"
+                /> */}
+                        {streamState.mic ? (
+                            <BsFillMicFill />
+                        ) : (
+                            <BsFillMicMuteFill />
+                        )}
+                    </div>
+                    <div
+                        className={`btn rounded-box mx-1 ${
+                            streamState.video
+                                ? ""
+                                : "bg-red-500 hover:bg-red-600"
+                        } `}
+                        data-tip={
+                            streamState.video ? "Hide Video" : "Show Video"
+                        }
+                        onClick={onVideoClick}
+                    >
+                        {/* <FontAwesomeIcon
+                    icon={!streamState.video ? faVideoSlash : faVideo}
+                /> */}
+                        {/* {streamState.video ? */}
+                        <BsCameraVideoFill />
+                        {/* // :
+                // <BsCameraVideoOffFill />} */}
+                    </div>
+                    <div
+                        className={`btn rounded-box mx-1 ${
+                            streamState.screen
+                                ? ""
+                                : "bg-red-500 hover:bg-red-600"
+                        } `}
+                        data-tip="Share Screen"
+                        onClick={onScreenClick}
+                        // disabled={streamState.screen}
+                    >
+                        {/* <FontAwesomeIcon icon={faDesktop} /> */}
+                        {streamState.screen ? (
+                            <MdScreenShare />
+                        ) : (
+                            <MdStopScreenShare />
+                        )}
+                    </div>
+                    <div className="btn rounded-box mx-1 bg-red-500 hover:bg-red-600">
+                        <MdCallEnd />
+                    </div>
+                </div>
+                <div><Timer/></div>
+            </div>
         </div>
     );
 }

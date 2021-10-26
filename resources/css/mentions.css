@@ -1,0 +1,72 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+.mentions {
+    @apply input input-ghost focus:bg-transparent resize-none p-3 border-none outline-none overflow-y-scroll;
+    margin: 1rem 0;
+    max-height: 305px;
+    padding-left: 0.75rem/* 12px */;
+  }
+  
+  .mentions--singleLine .mentions__control {
+    display: inline-block;
+    width: 130px;
+  }
+  .mentions--singleLine .mentions__highlighter {
+    padding: 1px;
+    border: 2px inset transparent;
+  }
+  .mentions--singleLine .mentions__input {
+    padding: 1px;
+    border: 2px inset;
+  }
+/*   
+  .mentions--multiLine .mentions__control {
+  } */
+  .mentions--multiLine .mentions__highlighter {
+    padding: 0 0.5rem;
+    border: 0;
+    font-size: 12pt;
+  }
+  .mentions--multiLine .mentions__input {
+    padding: 0 0.5rem;
+    outline: 0;
+    border: 0;
+  }
+  
+  .mentions__suggestions__list {
+    --tw-bg-opacity: 1;
+    background-color: hsla(var(--b2) / var(--tw-bg-opacity));
+    font-size: 10pt;
+  }
+  
+  .mentions__suggestions__item {
+    padding: 5px 15px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  }
+  
+  .mentions__suggestions__item--focused {
+    --tw-bg-opacity: 1;
+    background-color: hsla(var(--p) / var(--tw-bg-opacity));
+  }
+  
+  .mentions__mention {
+    position: relative;
+    z-index: -1;
+    background: red;
+    pointer-events: none;
+  }
+  .emoji__button {
+    position: absolute;
+    cursor: pointer;
+    padding: 1rem 0rem;
+    top: 0;
+    right: 0;
+  }
+  .emoji__picker {
+    position: absolute;
+    bottom: 10px;
+    right: 0;
+    float: right;
+    margin-left: 200px;
+  }

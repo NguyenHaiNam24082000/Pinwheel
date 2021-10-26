@@ -5,6 +5,7 @@ import React, {
     useCallback,
     useContext,
 } from "react";
+import { MentionsInput, Mention } from "react-mentions";
 import {
     FaPaperPlane,
     FaVideo,
@@ -24,6 +25,7 @@ import { IoIosMic } from "react-icons/io";
 import { GiSoundWaves } from "react-icons/gi";
 import { Picker } from "emoji-mart";
 import "../../../css/font-effect.css";
+import MentionsStyle from "../../../css/mentions.css";
 import "emoji-mart/css/emoji-mart.css";
 import { Howl, Howler } from "howler";
 import $ from "jquery";
@@ -40,6 +42,26 @@ import {
 } from "react-icons/bs";
 import { CgMoreR } from "react-icons/cg";
 import Modal from "../Modals/Modal";
+
+const neverMatchingRegex = /($a)/;
+
+// const users = [
+//     {
+//         _id: "123",
+//         name: { first: "John", last: "Reynolds" },
+//         avatar: "https://lh3.googleusercontent.com/a-/AOh14GhK-ARhz1b_aBShQFBFN2I7qgGX_x6QjOxFI6O8=s96-c",
+//     },
+//     {
+//         _id: "234",
+//         name: { first: "Holly", last: "Reynolds" },
+//         avatar: "https://lh3.googleusercontent.com/a-/AOh14GhK-ARhz1b_aBShQFBFN2I7qgGX_x6QjOxFI6O8=s96-c",
+//     },
+//     {
+//         _id: "345",
+//         name: { first: "Ryan", last: "Williams" },
+//         avatar: "https://lh3.googleusercontent.com/a-/AOh14GhK-ARhz1b_aBShQFBFN2I7qgGX_x6QjOxFI6O8=s96-c",
+//     },
+// ];
 
 function Chat() {
     const {
@@ -60,6 +82,9 @@ function Chat() {
     const [typing, setTyping] = useState("");
     const messagesEnd = useRef();
     const [play, setPlay] = useState(false);
+    const [images, setImages] = useState([]);
+    const [emojis, setEmojis] = useState([]);
+    const [users,setUsers]=useState([]);
     const emojiList = [
         "😀",
         "😁",
@@ -82,6 +107,15 @@ function Chat() {
         // socket.on("getUsers", (data) => {
         //     console.log("Hello",data)
         // });
+        fetch(
+            "https://gist.githubusercontent.com/oliveratgithub/0bf11a9aff0d6da7b46f1490f86a71eb/raw/d8e4b78cfe66862cf3809443c1dba017f37b61db/emojis.json"
+        )
+            .then((response) => {
+                return response.json();
+            })
+            .then((jsonData) => {
+                setEmojis(jsonData.emojis);
+            });
         socket.on("serverSendData", (dataGot) => {
             console.log("datagot", dataGot);
             setMess((oldMsgs) => [...oldMsgs, dataGot.data]);
@@ -99,23 +133,47 @@ function Chat() {
     }, []);
 
     useEffect(() => {
-        // axios
-        //     .get("/api/chat")
-        //     .then(function (response) {
-        //         // handle success
-        //         setMess((oldMsgs) => [...oldMsgs, ...response.data.chat]);
-        //         scrollToBottom();
-        //         console.log(response);
-        //     })
-        //     .catch(function (error) {
-        //         // handle error
-        //         console.log(error);
-        //     });
-        setMess([]);
+        axios
+            .get(`/api/chat/get/?conversation_id=${selectedConversationId}`)
+            .then(function (response) {
+                // handle success
+                setMess([...response.data.chat]);
+                scrollToBottom();
+                console.log(response);
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            });
+        axios.get(`api/conversation/getUsers/?conversation_id=${selectedConversationId}`)
+        .then(function (response) {
+            // handle success
+            setUsers([...response.data]);
+            console.log(response);
+        })
+        .catch(function (error) {
+            // handle error
+            console.log(error);
+        });
+        // setMess([]);
         const data = { ...user, selectedConversationId };
         socket.emit("joinConversation", data);
         return () => {};
     }, [conversations, selectedConversationId]);
+
+    const queryEmojis = (query, callback) => {
+        if (query.length === 0) return;
+
+        const matches = emojis
+            .filter((emoji) => {
+                return emoji.name.indexOf(query.toLowerCase()) > -1;
+            })
+            .slice(0, 10);
+        return matches.map(({ emoji, shortname }) => ({
+            id: emoji,
+            display: `${emoji} ${shortname}`,
+        }));
+    };
 
     const sendMessage = () => {
         if (message !== null && message.length !== 0) {
@@ -132,12 +190,26 @@ function Chat() {
             const msg = {
                 effect: effect,
                 content: message,
+                images: images,
+                created_at: new Date(),
             };
-            // axios.post("/api/chat/post", {
-            //     username: "hainam",
-            //     content: message,
-            // });
+            console.log({
+                sender_id: user.id,
+                conversation_id: selectedConversationId,
+                kind: "text",
+                effect: effect === null || effect.length === 0 ? "''" : effect,
+                content: message,
+                created_at: new Date().getTime(),
+            });
+            axios.post("/api/chat/post", {
+                sender_id: user.id,
+                conversation_id: selectedConversationId,
+                kind: "text",
+                effect: effect === null || effect.length === 0 ? "''" : effect,
+                content: message,
+            });
             socket.emit("clientSendData", msg);
+            setImages([]);
             setMessage("");
         }
     };
@@ -155,6 +227,8 @@ function Chat() {
                 content={m.content}
                 avatar={m.avatar}
                 name={m.name}
+                images={m.images}
+                time={new Date(m.created_at).getTime()}
             />
         </SmoothList>
     ));
@@ -218,12 +292,14 @@ function Chat() {
         const fileReader = new FileReader();
         fileReader.readAsDataURL(file);
         fileReader.onload = () => {
-            if ($(".preview-list").children().length < 10) {
-                $(".preview-list")
-                    .append(`<div class="inline-block ml-3 mt-3 rounded-box relative" style="width: 108px;height: 108px">
-                                    <i class="far fa-times-circle absolute top-2 right-2 cursor-pointer"></i>
-                                    <img src='${fileReader.result}' class="w-full h-full rounded-box"></img>
-                                </div>`);
+            if (images.length < 10) {
+                setImages((image) => [...image, fileReader.result]);
+                // $(".preview-list")
+                //     .append(`<div class="inline-block ml-3 mt-3 rounded-box relative" style="width: 108px;height: 108px">
+                //                     <i class="far fa-times-circle absolute top-2 right-2 cursor-pointer"></i>
+                //                     <img src='${fileReader.result}' class="w-full h-full rounded-box"></img>
+                //                 </div>`);
+                console.log(images);
                 $("#count-file").text($(".preview-list").children().length);
             } else {
                 $("#count-file").css("color", "red");
@@ -243,8 +319,8 @@ function Chat() {
         const files = document.querySelector("#file").files;
         for (var i = 0; i < files.length; ++i) {
             if (/\.(jpe?g|png|gif)$/i.test(files[i].name)) {
-                $(".count-file-list").css("display", "inline-block");
-                $(".preview-list").css("display", "inline-block");
+                // $(".count-file-list").css("display", "inline-block");
+                // $(".preview-list").css("display", "inline-block");
                 previewImage(files[i]);
             }
         }
@@ -263,6 +339,12 @@ function Chat() {
         let textAreaHeight = e.target.scrollHeight;
         $("#chatTextArea").css("height", `${textAreaHeight}px`);
     };
+
+    const userMentionData = users.map((myUser) => ({
+        id: myUser.id,
+        display: myUser.name,
+        image: myUser.avatar,
+    }));
 
     return (
         <div
@@ -361,14 +443,15 @@ function Chat() {
                     </div>
                 </div>
                 <div
-                    className="flex px-3 py-1 border-b overflow-hidden justify-between"
+                    className="flex px-3 py-1 border-b overflow-hidden"
                     style={{
                         background: "rgba(255,255,255,0.3)",
                     }}
                 >
                     <button
                         onClick={() => setOpenModalBookmark(true)}
-                        className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-44 mr-2 truncate"
+                        className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-auto mr-2 truncate"
+                        style={{ maxWidth: "176px" }}
                     >
                         <BsPlusSquare className="mr-3"></BsPlusSquare>
                         <span className="truncate overflow-ellipsis">
@@ -378,14 +461,18 @@ function Chat() {
                     <a
                         target="_blank"
                         href="https://www.facebook.com/"
-                        className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-44 mr-2 truncate"
+                        className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-auto mr-2 truncate"
+                        style={{ maxWidth: "176px" }}
                     >
                         <BsPlusSquare className="mr-3"></BsPlusSquare>
-                        <span className="truncate overflow-ellipsis">
-                            Facebook Abc xyz
-                        </span>
+                        <span className="truncate overflow-ellipsis">Fb</span>
                     </a>
-                    <a className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-44 mr-2 truncate">
+                    <a
+                        target="_blank"
+                        href="https://www.facebook.com/"
+                        className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-auto mr-2 truncate"
+                        style={{ maxWidth: "176px" }}
+                    >
                         <BsPlusSquare className="mr-3"></BsPlusSquare>
                         <span className="truncate overflow-ellipsis">
                             Add a bookmark
@@ -396,7 +483,7 @@ function Chat() {
                     </a>
                 </div>
             </div>
-            <div className="flex flex-col w-full h-full overflow-y-auto mt-16 overflow-x-hidden">
+            <div className="flex flex-col w-full h-full overflow-y-auto mt-28 overflow-x-hidden">
                 {renderMess}
                 <div
                     style={{ float: "left", clear: "both" }}
@@ -551,19 +638,45 @@ function Chat() {
                 </div>
                 <div
                     className="w-full h-10 p-3 count-file-list"
-                    style={{ display: "none" }}
+                    style={{
+                        display: `${
+                            images.length > 0 ? "inline-block" : "none"
+                        }`,
+                    }}
                 >
-                    📁<span id="count-file">0</span>/10 file được chọn
+                    📁<span id="count-file">{images.length}</span>/10 file được
+                    chọn
                 </div>
                 <div
                     className="w-full h-32 preview-list overflow-x-auto relative"
-                    style={{ display: "none" }}
-                ></div>
+                    style={{
+                        display: `${
+                            images.length > 0 ? "inline-block" : "none"
+                        }`,
+                    }}
+                >
+                    {images &&
+                        images.map((value, index) => (
+                            <div
+                                key={index + value}
+                                className="inline-block ml-3 mt-3 rounded-box relative"
+                                style={{ width: "108px", height: "108px" }}
+                            >
+                                <i className="far fa-times-circle absolute top-2 right-2 cursor-pointer"></i>
+                                <img
+                                    src={value}
+                                    className="w-full h-full rounded-box"
+                                ></img>
+                            </div>
+                        ))}
+                </div>
                 <div className="flex w-full">
                     <div className="bg-transparent w-full">
                         <div className="form-control">
-                            <textarea
+                            <MentionsInput
                                 value={message}
+                                // value={"Hi @{{user||123||John Reynolds}}"}
+                                markup="@{{__type__||__id__||__display__}}"
                                 onKeyDown={onEnterPress}
                                 onKeyUp={(e) => onHandleKeyUp(e)}
                                 onFocus={onFocusInput}
@@ -573,9 +686,52 @@ function Chat() {
                                 placeholder="Abc..."
                                 onPaste={pasteFromClipBoard}
                                 id="chatTextArea"
-                                className={`input input-ghost focus:bg-transparent ${effect} resize-none p-3`}
-                                style={{ maxHeight: "305px" }}
-                            />
+                                className={`mentions ${effect}`}
+                                // classNames={MentionsStyle}
+                                // className={`input input-ghost focus:bg-transparent ${effect} resize-none p-3 border-none outline-none`}
+                                allowSuggestionsAboveCursor={true}
+                            >
+                                <Mention
+                                    trigger="@"
+                                    data={userMentionData}
+                                    className="mentions__mention"
+                                    renderSuggestion={(
+                                        suggestion,
+                                        search,
+                                        highlightedDisplay,
+                                        index,
+                                        focused,
+                                        entry
+                                    ) => (
+                                        <div className="flex items-center">
+                                            <div className="avatar mr-3">
+                                                <div className="rounded-full w-8 h-8">
+                                                    <img
+                                                        src={suggestion.image}
+                                                    />
+                                                </div>
+                                            </div>
+                                            {highlightedDisplay}
+                                        </div>
+                                    )}
+                                    appendSpaceOnAdd={true}
+                                    displayTransform={(id, display) => {
+                                        return `@${display}`;
+                                    }}
+                                    // renderSuggestion={this.renderUserSuggestion}
+                                />
+                                <Mention
+                                    trigger=":"
+                                    markup="__id__"
+                                    regex={neverMatchingRegex}
+                                    data={queryEmojis}
+                                />
+                                {/* <Mention
+                                    trigger="#"
+                                    data={this.requestTag}
+                                    renderSuggestion={this.renderTagSuggestion}
+                                /> */}
+                            </MentionsInput>
                         </div>
                     </div>
                     <div className="flex items-center position-relative">
@@ -863,10 +1019,11 @@ function Chat() {
                     </div>
                 </div>
                 <div className="modal-action">
-                    <a className="btn btn-primary">
-                        Add
-                    </a>
-                    <a className="btn" onClick={() => setOpenModalBookmark(false)}>
+                    <a className="btn btn-primary">Add</a>
+                    <a
+                        className="btn"
+                        onClick={() => setOpenModalBookmark(false)}
+                    >
                         Close
                     </a>
                 </div>
