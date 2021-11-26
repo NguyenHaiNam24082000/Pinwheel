@@ -150,7 +150,7 @@ export default function VideoCall() {
                 </div>
             </div>
             <div className="h-20 w-full flex justify-between items-center absolute bottom-0 left-0 bg-gray-500">
-                <div><Timer/></div>
+                {/* <div><Timer/></div> */}
                 <div>
                     <div
                         className={`btn rounded-box mx-1 ${
@@ -214,7 +214,7 @@ export default function VideoCall() {
                         <MdCallEnd />
                     </div>
                 </div>
-                <div><Timer/></div>
+                {/* <div><Timer/></div> */}
             </div>
         </div>
     );

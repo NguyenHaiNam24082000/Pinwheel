@@ -35,6 +35,7 @@ import Message from "./Message";
 import SmoothList from "react-smooth-list";
 import { AppContext } from "../../context/AppProvider";
 import { AuthContext } from "../../context/AuthProvider";
+import {storage } from "../../firebase";
 import {
     BsBoxArrowDownRight,
     BsBoxArrowInDownRight,
@@ -42,6 +43,30 @@ import {
 } from "react-icons/bs";
 import { CgMoreR } from "react-icons/cg";
 import Modal from "../Modals/Modal";
+import { GiphyFetch } from "@giphy/js-fetch-api";
+import {
+    Carousel,
+    Gif,
+    Grid,
+    Video,
+    VideoOverlay,
+} from "@giphy/react-components";
+
+const giphyFetch = new GiphyFetch("GKetK6r9PK36VryDvQkb8Y01AW8YyO80");
+function CarouselDemo() {
+    const fetchGifs = (offset) =>
+        giphyFetch.search("dogs", { offset, limit: 10 });
+    return <Carousel fetchGifs={fetchGifs} gifHeight={200} gutter={6} />;
+}
+const SpeechRecognizer =
+    window.SpeechRecognition ||
+    window.webkitSpeechRecognition ||
+    window.mozSpeechRecognition;
+const mic = new SpeechRecognizer();
+
+mic.continuous = true;
+mic.interimResults = true;
+mic.lang = "vi-VI";
 
 const neverMatchingRegex = /($a)/;
 
@@ -71,9 +96,12 @@ function Chat() {
         setOpenDetail,
         openDetail,
     } = useContext(AppContext);
+    const [url, setUrl] = useState("");
+    const [progress, setProgress] = useState(0);
     const { user } = useContext(AuthContext);
     const { socket } = useContext(SocketContext);
     const [showEmoji, setShowEmoji] = useState(false);
+    const [showEmojiIcon, setShowEmojiIcon] = useState(false);
     const [openModalBookmark, setOpenModalBookmark] = useState(false);
     const [mess, setMess] = useState([]);
     const [message, setMessage] = useState("");
@@ -84,7 +112,18 @@ function Chat() {
     const [play, setPlay] = useState(false);
     const [images, setImages] = useState([]);
     const [emojis, setEmojis] = useState([]);
-    const [users,setUsers]=useState([]);
+    const [users, setUsers] = useState([]);
+    const [openModalImagePreview, setOpenModalImagePreview] = useState(false);
+    const [imagePreview, setImagePreview] = useState({ id: "-1", src: "" });
+    const [KaomojiAngry, setKaomojiAngry] = useState([]);
+    const [KaomojiBadMood, setKaomojiBadMood] = useState([]);
+    const [KaomojiBear, setKaomojiBear] = useState([]);
+    const [KaomojiBeg, setKaomojiBeg] = useState([]);
+    const [title, setTitle] = useState("");
+    const [icon, setIcon] = useState("📌");
+    const [link, setLink] = useState("");
+    const [bookmark, setBookmark] = useState([]);
+    const [description, setDescription] = useState("");
     const emojiList = [
         "😀",
         "😁",
@@ -101,12 +140,47 @@ function Chat() {
         "😊",
         "🤩",
     ];
+    const handleUpload = () => {
+        const uploadTask = storage.ref(`images/${image.name}`).put(image);
+        uploadTask.on(
+          "state_changed",
+          snapshot => {
+            const progress = Math.round(
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+            );
+            setProgress(progress);
+          },
+          error => {
+            console.log(error);
+          },
+          () => {
+            storage
+              .ref("images")
+              .child(image.name)
+              .getDownloadURL()
+              .then(url => {
+                setUrl(url);
+              });
+          }
+        );
+      };
+    
 
     useEffect(() => {
         // socket.emit("online",user)
         // socket.on("getUsers", (data) => {
         //     console.log("Hello",data)
         // });
+        fetch(
+            "https://raw.githubusercontent.com/towzeur/Japanese-Emoticons-json/master/Japanese_Emoticons.json"
+        )
+            .then((response) => {
+                return response.json();
+            })
+            .then((jsonData) => {
+                console.log(jsonData.angry);
+                setKaomojiAngry(jsonData.angry);
+            });
         fetch(
             "https://gist.githubusercontent.com/oliveratgithub/0bf11a9aff0d6da7b46f1490f86a71eb/raw/d8e4b78cfe66862cf3809443c1dba017f37b61db/emojis.json"
         )
@@ -131,8 +205,24 @@ function Chat() {
         });
         return () => {};
     }, []);
-
+    const [imageGallery, setImageGallery] = useState([]);
     useEffect(() => {
+        setMess([]);
+        axios
+            .get(
+                `/api/getAllBookmark/?conversation_id=${selectedConversationId}`
+            )
+            .then((res) => {
+                setBookmark([...res.data]);
+                console.log(res);
+            });
+        axios
+            .get(`/api/getalllink/?conversation_id=${selectedConversationId}`)
+            .then((response) => {
+                setImageGallery([
+                    ...response.data.filter((x) => x.kind === "photo"),
+                ]);
+            });
         axios
             .get(`/api/chat/get/?conversation_id=${selectedConversationId}`)
             .then(function (response) {
@@ -145,21 +235,44 @@ function Chat() {
                 // handle error
                 console.log(error);
             });
-        axios.get(`api/conversation/getUsers/?conversation_id=${selectedConversationId}`)
-        .then(function (response) {
-            // handle success
-            setUsers([...response.data]);
-            console.log(response);
-        })
-        .catch(function (error) {
-            // handle error
-            console.log(error);
-        });
+        axios
+            .get(
+                `api/conversation/getUsers/?conversation_id=${selectedConversationId}`
+            )
+            .then(function (response) {
+                // handle success
+                setUsers([...response.data]);
+                console.log(response);
+            })
+            .catch(function (error) {
+                // handle error
+                console.log(error);
+            });
         // setMess([]);
         const data = { ...user, selectedConversationId };
         socket.emit("joinConversation", data);
         return () => {};
     }, [conversations, selectedConversationId]);
+
+    const addBookmark = () => {
+        axios
+            .post(
+                `/api/postBookmark/?conversation_id=${selectedConversationId}&creator_id=${user.id}&link=${link}&title=${title}&description=${description}&icon=${icon}`
+            )
+            .then((res) => {
+                setBookmark((data) => [...data, res.data.bookmarks]);
+                console.log(res);
+            });
+    };
+    const handleLink = (e) => {
+        setLink(e.target.value);
+    };
+    const handleTitle = (e) => {
+        setTitle(e.target.value);
+    };
+    const handleDescription = (e) => {
+        setDescription(e.target.value);
+    };
 
     const queryEmojis = (query, callback) => {
         if (query.length === 0) return;
@@ -174,6 +287,11 @@ function Chat() {
             display: `${emoji} ${shortname}`,
         }));
     };
+
+    const queryKaomoji = KaomojiAngry.map((value, index) => ({
+        id: `${value}`,
+        display: `${value}`,
+    }));
 
     const sendMessage = () => {
         if (message !== null && message.length !== 0) {
@@ -223,11 +341,13 @@ function Chat() {
             <Message
                 userId={user.id}
                 messageId={m.id}
+                mid={m.message_id}
                 effect={m.effect}
                 content={m.content}
                 avatar={m.avatar}
                 name={m.name}
                 images={m.images}
+                imageGallery={m.kind==='photo'?imageGallery:null}
                 time={new Date(m.created_at).getTime()}
             />
         </SmoothList>
@@ -258,22 +378,43 @@ function Chat() {
         [showEmoji]
     );
 
+    const openPickerIcon = useCallback(
+        function () {
+            let isShowEmoji = showEmojiIcon;
+            setShowEmojiIcon(!isShowEmoji);
+        },
+        [showEmojiIcon]
+    );
+
+    const addEmojiIcon = (emoji) => {
+        console.log(emoji);
+        setIcon(emoji.native);
+    };
+
     const addEmoji = (emoji) => {
         console.log(emoji);
         setMessage(message + emoji.native);
     };
 
     const makeCall = () => {
-        var sound = new Howl({
-            src: ["../../../assets/sounds/call/tick-tock-clock-timer.wav"],
-            autoplay: true,
-            loop: true,
-            volume: 0.75,
-            onend: function () {
-                console.log("Finished!");
-            },
-        });
-        sound.play();
+        // var sound = new Howl({
+        //     src: ["../../../assets/sounds/call/tick-tock-clock-timer.wav"],
+        //     autoplay: true,
+        //     loop: true,
+        //     volume: 0.75,
+        //     onend: function () {
+        //         console.log("Finished!");
+        //     },
+        // });
+        // sound.play();
+        const w = window.outerWidth;
+        const h = window.outerHeight;
+        const WIDTH = (window.outerWidth * 90) / 100;
+        const HEIGHT = (window.outerHeight * 90) / 100;
+        const left = Math.max(0, w / 2 - WIDTH / 2);
+        const top = Math.max(0, h / 2 - HEIGHT / 2);
+        const config = `width=${WIDTH}, height=${HEIGHT}, top=${top}, left=${left}`;
+        window.open("/videocall", "Video Call", config);
     };
 
     const pasteFromClipBoard = (e) => {
@@ -293,7 +434,10 @@ function Chat() {
         fileReader.readAsDataURL(file);
         fileReader.onload = () => {
             if (images.length < 10) {
-                setImages((image) => [...image, fileReader.result]);
+                setImages((image) => [
+                    ...image,
+                    { id: images.length, src: fileReader.result },
+                ]);
                 // $(".preview-list")
                 //     .append(`<div class="inline-block ml-3 mt-3 rounded-box relative" style="width: 108px;height: 108px">
                 //                     <i class="far fa-times-circle absolute top-2 right-2 cursor-pointer"></i>
@@ -346,6 +490,17 @@ function Chat() {
         image: myUser.avatar,
     }));
 
+    const removeImage = (id) => {
+        setImages(images.filter((img) => img.id !== id));
+    };
+
+    const onHandlePreview = (src) => {
+        setImagePreview(src);
+        setOpenModalImagePreview(true);
+    };
+
+    const speechToText = () => {};
+
     return (
         <div
             className={`flex flex-col bg-base-200 h-full rounded-box relative drawer-content ${
@@ -354,8 +509,8 @@ function Chat() {
             style={{
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
-                backgroundImage:
-                    "url(https://cdnb.artstation.com/p/assets/images/images/041/618/763/large/ella-kremer-ponyo.jpg?1632222730)",
+                // backgroundImage: "url(https://source.unsplash.com/random)",
+                backgroundImage: "url(https://images.unsplash.com/photo-1539213492139-7b268eb93c82?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1964&q=80)"
             }}
         >
             <input
@@ -423,7 +578,8 @@ function Chat() {
                             className="btn btn-primary btn-square mask mask-squircle justify-center items-center mr-3"
                             // onClick={makeCall}
                             onClick={() => {
-                                setPlay(!play);
+                                makeCall();
+                                // setPlay(!play);
                             }}
                         >
                             <FaVideo className="w-5 h-5" />
@@ -458,7 +614,22 @@ function Chat() {
                             Add a bookmark
                         </span>
                     </button>
-                    <a
+                    {bookmark &&
+                        bookmark.map((value, index) => (
+                            <a
+                                key={index + value}
+                                target="_blank"
+                                href={value.link}
+                                className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-auto mr-2 truncate"
+                                style={{ maxWidth: "176px" }}
+                            >
+                                <div className="mr-3">{value.icon}</div>
+                                <span className="truncate overflow-ellipsis">
+                                    {value.title}
+                                </span>
+                            </a>
+                        ))}
+                    {/* <a
                         target="_blank"
                         href="https://www.facebook.com/"
                         className="cursor-pointer rounded h-8 px-3 btn-primary text-base inline-flex items-center w-auto mr-2 truncate"
@@ -480,7 +651,7 @@ function Chat() {
                     </a>
                     <a className="rounded h-8 px-3 btn-primary text-base inline-flex items-center w-12 mr-2 truncate justify-center">
                         <CgMoreR></CgMoreR>
-                    </a>
+                    </a> */}
                 </div>
             </div>
             <div className="flex flex-col w-full h-full overflow-y-auto mt-28 overflow-x-hidden">
@@ -502,6 +673,7 @@ function Chat() {
                     </>
                 )}
             </div>
+            {/* <CarouselDemo /> */}
             <div
                 className={`flex flex-col h-auto rounded-box bg-base-300 ${
                     typing === "" ? "m-4" : "mx-4 mb-4"
@@ -662,10 +834,14 @@ function Chat() {
                                 className="inline-block ml-3 mt-3 rounded-box relative"
                                 style={{ width: "108px", height: "108px" }}
                             >
-                                <i className="far fa-times-circle absolute top-2 right-2 cursor-pointer"></i>
+                                <i
+                                    className="far fa-times-circle absolute top-2 right-2 cursor-pointer"
+                                    onClick={() => removeImage(index)}
+                                ></i>
                                 <img
-                                    src={value}
+                                    src={value.src}
                                     className="w-full h-full rounded-box"
+                                    onClick={() => onHandlePreview(value)}
                                 ></img>
                             </div>
                         ))}
@@ -687,6 +863,7 @@ function Chat() {
                                 onPaste={pasteFromClipBoard}
                                 id="chatTextArea"
                                 className={`mentions ${effect}`}
+                                forceSuggestionsAboveCursor={true}
                                 // classNames={MentionsStyle}
                                 // className={`input input-ghost focus:bg-transparent ${effect} resize-none p-3 border-none outline-none`}
                                 allowSuggestionsAboveCursor={true}
@@ -726,6 +903,16 @@ function Chat() {
                                     regex={neverMatchingRegex}
                                     data={queryEmojis}
                                 />
+                                <Mention
+                                    className="mentions__mention"
+                                    forceSuggestionsAboveCursor={true}
+                                    trigger="~/"
+                                    markup="__id__"
+                                    allowSuggestionsAboveCursor={true}
+                                    regex={neverMatchingRegex}
+                                    data={queryKaomoji}
+                                    appendSpaceOnAdd={true}
+                                />
                                 {/* <Mention
                                     trigger="#"
                                     data={this.requestTag}
@@ -739,7 +926,10 @@ function Chat() {
                             style={{ padding: "0" }}
                             className="btn h-10  rounded-l text-base-content bg-transparent hover:bg-transparent border-0 hover:text-gray-500"
                         >
-                            <IoIosMic className="w-6 h-6" />
+                            <IoIosMic
+                                className="w-6 h-6"
+                                onClick={speechToText}
+                            />
                         </div>
                         <div className="dropdown dropdown-top">
                             <div
@@ -978,6 +1168,8 @@ function Chat() {
                         type="text"
                         placeholder="https://bookmark.com"
                         className="input input-bordered"
+                        value={link}
+                        onChange={handleLink}
                     />
                 </div>
                 <div className="form-control">
@@ -986,11 +1178,34 @@ function Chat() {
                             Title
                         </span>
                     </label>
-                    <input
-                        type="text"
-                        placeholder="Ex. Project"
-                        className="input input-bordered"
-                    />
+                    <div className="relative w-full flex">
+                        <button
+                            className="absolute top-0 left-0 rounded-r-none btn btn-primary"
+                            onClick={openPickerIcon}
+                        >
+                            {icon}
+                        </button>
+                        <input
+                            type="text"
+                            placeholder="Ex. Project"
+                            className="input input-bordered pl-16 w-full"
+                            value={title}
+                            onChange={handleTitle}
+                        />
+                        {showEmojiIcon && (
+                            <Picker
+                                onSelect={addEmojiIcon}
+                                title="Pick your emoji…"
+                                style={{
+                                    position: "absolute",
+                                    top: "60px",
+                                    right: "auto",
+                                    zIndex: "50",
+                                }}
+                                theme={"dark"}
+                            />
+                        )}
+                    </div>
                 </div>
                 <div className="form-control">
                     <label className="label">
@@ -1002,6 +1217,8 @@ function Chat() {
                         type="text"
                         placeholder="Social App"
                         className="input input-bordered"
+                        value={description}
+                        onChange={handleDescription}
                     />
                 </div>
                 <div className="card bordered mt-5 text-black flex-row items-center border-4">
@@ -1019,10 +1236,39 @@ function Chat() {
                     </div>
                 </div>
                 <div className="modal-action">
-                    <a className="btn btn-primary">Add</a>
+                    <a className="btn btn-primary" onClick={addBookmark}>
+                        Add
+                    </a>
                     <a
                         className="btn"
                         onClick={() => setOpenModalBookmark(false)}
+                    >
+                        Close
+                    </a>
+                </div>
+            </Modal>
+            <Modal
+                handleClose={() => setOpenModalImagePreview(false)}
+                show={openModalImagePreview}
+            >
+                <div className="text-black text-xl font-bold">
+                    Image Preview
+                </div>
+                <div className="card bordered mt-5 text-black flex-row items-center border-4">
+                    <figure className="flex justify-center m-3 items-center">
+                        <img src={imagePreview.src} />
+                    </figure>
+                </div>
+                <div className="modal-action">
+                    <a
+                        className="btn btn-primary"
+                        onClick={() => removeImage(imagePreview.id)}
+                    >
+                        Remove
+                    </a>
+                    <a
+                        className="btn"
+                        onClick={() => setOpenModalImagePreview(false)}
                     >
                         Close
                     </a>

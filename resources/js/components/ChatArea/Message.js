@@ -1,5 +1,6 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import LinkPreview from "@ashwamegh/react-link-preview";
+import { Picker } from "emoji-mart";
 const reactStringReplace = require("react-string-replace");
 import "@ashwamegh/react-link-preview/dist/index.css";
 import ContentLoader from "react-content-loader";
@@ -7,8 +8,32 @@ import Media from "../Media";
 import ContextMenuChat from "../ContextMenu/ContextMenuChat";
 import { RoughNotation, RoughNotationGroup } from "react-rough-notation";
 import { formatRelative } from "date-fns/esm";
-import { Code } from "@mantine/core";
+import { Code, Spoiler } from "@mantine/core";
 import { Prism } from "@mantine/prism";
+import { Collapsible, Button } from "@douyinfe/semi-ui";
+import { ActionIcon } from "@mantine/core";
+import { FiMoreVertical } from "react-icons/fi";
+import { Menu } from "@mantine/core";
+import { FcLike } from "react-icons/fc";
+import { BsFillReplyFill } from "react-icons/bs";
+import { AiOutlineDelete } from "react-icons/ai";
+import { MdRestore } from "react-icons/md";
+import { Badge, Popover, Text } from "@mantine/core";
+import { MdGTranslate } from "react-icons/md";
+import { FaVolumeUp } from "react-icons/fa";
+import translate from "google-translate-open-api";
+// import ReactMapGL, { Marker, Popup } from "react-map-gl";
+// import 'mapbox-gl/dist/mapbox-gl.css';
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import osm from "./osm-providers";
+import "leaflet/dist/leaflet.css";
+const markerIcon = new L.Icon({
+    iconUrl: "https://xuonginthanhpho.com/wp-content/uploads/2020/03/map-marker-icon.png",
+    iconSize: [40, 40],
+    iconAnchor: [17, 46], //[left/right, top/bottom]
+    popupAnchor: [0, -46], //[left/right, top/bottom]
+});
 
 function formatDate(seconds) {
     let formattedDate = "";
@@ -22,7 +47,7 @@ function formatDate(seconds) {
 
     return formattedDate;
 }
-
+const iconProps = { width: 14, height: 14 };
 export default function Message({
     userId,
     messageId,
@@ -31,14 +56,18 @@ export default function Message({
     avatar,
     name,
     images,
+    imageGallery,
+    mid,
     time,
 }) {
+    const [opened, setOpened] = useState(false);
     const [active, setActive] = React.useState(false),
         [position, setPosition] = React.useState({ x: 0, y: 0 });
+    const [showEmoji, setShowEmoji] = useState(false);
+    const [text, setText] = useState(content);
 
     const [menuRadius, setMenuRadius] = React.useState(100),
         [itemRadius, setItemRadius] = React.useState(25);
-
     const [contextMenuItems, setContextMenuItems] = React.useState([]);
     // React.useEffect(() => {
     //     // Only for CodePen preview
@@ -51,6 +80,16 @@ export default function Message({
     //         setActive(true);
     //     }, 500);
     // }, []);
+
+    const translateText = async () => {
+        const result = await translate(`${text}`, {
+            tld: "com",
+            to: "vi",
+            browers: true,
+        });
+        const data = result.data[0];
+        setText(data);
+    };
     const patterns = {
         boldItalic: /\*\*\*(.*?)\*\*\*/gs,
         bold: /\*\*(.*?)\*\*/gs,
@@ -70,7 +109,10 @@ export default function Message({
         highlight: />>(.*)<</gm,
         bracket: /\[_(.*)_\]/gm,
         circle: /\(\(_(.*)_\)\)/gs,
+        map: /\[map\:\{lat\:\"[0-9]+.[0-9]+",lng:"[0-9]+.[0-9]+\"\}\]/g,
     };
+
+    console.log("imagesszzz", images);
 
     const format = (content) =>
         content
@@ -223,6 +265,38 @@ export default function Message({
             );
         });
     };
+    const openPicker = useCallback(
+        function () {
+            let isShowEmoji = showEmoji;
+            setShowEmoji(!isShowEmoji);
+        },
+        [showEmoji]
+    );
+
+    function speak(text) {
+        // Create a new instance of SpeechSynthesisUtterance.
+        var msg = new SpeechSynthesisUtterance();
+
+        // Set the text.
+        msg.text = text;
+
+        // Set the attributes.
+        msg.volume = parseFloat(1);
+        msg.rate = parseFloat(1);
+        msg.pitch = parseFloat(1);
+
+        // If a voice has been selected, find the voice and set the
+        // utterance instance's voice attribute.
+        msg.voice = speechSynthesis.getVoices().filter(function (voice) {
+            return (
+                voice.name ===
+                "Microsoft HoaiMy Online (Natural) - Vietnamese (Vietnam)"
+            );
+        })[0];
+
+        // Queue this utterance.
+        window.speechSynthesis.speak(msg);
+    }
 
     const normalizeContent = useCallback((content) => {
         const regexLink = /(https?:\/\/\S+)/g;
@@ -232,6 +306,8 @@ export default function Message({
         let codeMultiline = content.match(patterns.codeMultiline);
         let bracket = content.match(patterns.bracket);
         let circle = content.match(patterns.circle);
+        let map = content.match(patterns.map);
+        console.log(map, "hshshsh");
         if (links !== null) {
             let replaceString = reactStringReplace(
                 content,
@@ -253,6 +329,53 @@ export default function Message({
                 )
             );
             return <>{replaceString}</>;
+        }
+        if (map !== null) {
+            const viewport = {
+                width: "100%",
+                height: "200px",
+                latitude: parseFloat(
+                    map[0].match(/[+-]?([0-9]*[.])?[0-9]+/)[0]
+                ),
+                longitude: parseFloat(
+                    map[0].match(/[+-]?([0-9]*[.])?[0-9]+/)[1]
+                ),
+                zoom: 16,
+            };
+            return (
+                <MapContainer
+                className="w-full h-80"
+                    center={{ lat: viewport.latitude, lng: viewport.longitude }}
+                    zoom={8}
+                >
+                    <TileLayer
+                        url={osm.maptiler.url}
+                        attribution={osm.maptiler.attribution}
+                    />
+                    <Marker
+                        position={[viewport.latitude, viewport.longitude]}
+                        icon={markerIcon}
+                        // key={idx}
+                    ></Marker>
+                </MapContainer>
+                // <ReactMapGL
+                //     {...viewport}
+                //     mapStyle="mapbox://styles/mapbox/streets-v11"
+                //     mapboxApiAccessToken="pk.eyJ1Ijoibmd1eWVuaGFpbmFtMjAwMCIsImEiOiJja3c5MG84d3cwbmxsMm5xbThvZjZqZWJmIn0.GoVtZ8PHpUUzR7clny7UrQ"
+                // >
+                //     <Marker
+                //         latitude={viewport.latitude}
+                //         longitude={viewport.longitude}
+                //         offsetLeft={-20}
+                //         offsetTop={-30}
+                //     >
+                //         <img
+                //             style={{ height: 50, width: 50 }}
+                //             src="https://xuonginthanhpho.com/wp-content/uploads/2020/03/map-marker-icon.png"
+                //         />
+                //     </Marker>
+                // </ReactMapGL>
+            );
         }
         if (underline !== null) {
             let replaceString = reactStringReplace(
@@ -301,7 +424,7 @@ export default function Message({
                         copyLabel="Copy code to clipboard"
                         copiedLabel="Code copied to clipboard"
                         key={match + i}
-                        withLineNumbers 
+                        withLineNumbers
                     >
                         {match}
                     </Prism>
@@ -413,28 +536,111 @@ export default function Message({
                 style={{ width: "calc(100% - 72px)" }}
             >
                 <div className="flex justify-between w-full">
-                    <div className="font-bold w-full">{name}</div>
-                    <div>{formatDate(time)}</div>
+                    <div className="w-full flex items-center">
+                        <div className="font-bold mr-2">{name}</div> {" - "}{" "}
+                        <div className="ml-2 text-2xs font-thin">{time}</div>
+                    </div>
+                    <div className="flex items-center">
+                        <Menu
+                            trigger="hover"
+                            delay={500}
+                            closeOnScroll={false}
+                            position="left"
+                            icon={
+                                <ActionIcon>
+                                    <FiMoreVertical />
+                                </ActionIcon>
+                            }
+                        >
+                            <Menu.Item
+                                key="2"
+                                icon={<FcLike {...iconProps} />}
+                                onClick={() => {
+                                    console.log(content);
+                                }}
+                            >
+                                Reactions
+                            </Menu.Item>
+                            <Menu.Item
+                                key="3"
+                                icon={<BsFillReplyFill {...iconProps} />}
+                            >
+                                Reply
+                            </Menu.Item>
+                            <Menu.Item
+                                key="4"
+                                icon={<MdGTranslate {...iconProps} />}
+                                onClick={translateText}
+                            >
+                                Translate
+                            </Menu.Item>
+                            <Menu.Item
+                                key="5"
+                                icon={<FaVolumeUp {...iconProps} />}
+                                onClick={() => speak(text)}
+                            >
+                                Text to Speech
+                            </Menu.Item>
+                            <Menu.Item
+                                key="6"
+                                icon={<MdRestore {...iconProps} />}
+                            >
+                                Restore
+                            </Menu.Item>
+                            <Menu.Item
+                                key="7"
+                                icon={<AiOutlineDelete {...iconProps} />}
+                            >
+                                Delete
+                            </Menu.Item>
+                        </Menu>
+                    </div>
                 </div>
-                <RoughNotationGroup show={true}>
-                    <div className={`${effect} whitespace-pre-wrap`}>
-                        {normalizeContent(content)}
+                <div className={`${effect} whitespace-pre-wrap flex-col flex`}>
+                    <Spoiler
+                        maxHeight={300}
+                        showLabel="Show more"
+                        hideLabel="Hide"
+                    >
+                        <RoughNotationGroup show={true}>
+                            {normalizeContent(content)}
+                        </RoughNotationGroup>
                         {images &&
                             images.map((value, index) => (
                                 <div
                                     key={index + value}
-                                    className="inline-block ml-3 mt-3 rounded-box relative"
-                                    style={{ width: "108px", height: "108px" }}
+                                    className="inline-block mr-3 mt-3 rounded-box relative"
+                                    style={{
+                                        width: "108px",
+                                        height: "108px",
+                                    }}
                                 >
-                                    <i className="far fa-times-circle absolute top-2 right-2 cursor-pointer"></i>
                                     <img
-                                        src={value}
+                                        src={value.src}
                                         className="w-full h-full rounded-box"
                                     ></img>
                                 </div>
                             ))}
-                        {content.match(/(https?:\/\/\S+)/g) &&
-                            content
+                        {imageGallery &&
+                            imageGallery
+                                .filter((x) => x.messages_id === mid)
+                                .map((value, index) => (
+                                    <div
+                                        key={index + value}
+                                        className="inline-block mr-3 mt-3 rounded-box relative"
+                                        style={{
+                                            width: "108px",
+                                            height: "108px",
+                                        }}
+                                    >
+                                        <img
+                                            src={value.attachment_tumb_url}
+                                            className="w-full h-full rounded-box"
+                                        ></img>
+                                    </div>
+                                ))}
+                        {text.match(/(https?:\/\/\S+)/g) &&
+                            text
                                 .match(/(https?:\/\/\S+)/g)
                                 .map((value, index) => (
                                     <LinkPreview
@@ -449,8 +655,61 @@ export default function Message({
                             <code>can be any color!</code>
                         </pre>
                     </div> */}
-                    </div>
-                </RoughNotationGroup>
+                    </Spoiler>
+                </div>
+                <div className="flex mt-2 items-center">
+                    <Badge
+                        variant="outline"
+                        style={{ paddingLeft: 3, marginRight: 3 }}
+                        leftSection={"😀"}
+                    >
+                        1
+                    </Badge>
+                    <Popover
+                        opened={opened}
+                        onClose={() => setOpened(false)}
+                        position="top"
+                        placement="center"
+                        withArrow
+                        noFocusTrap
+                        noEscape
+                        transition="pop-top-left"
+                        styles={{
+                            body: { width: 120, pointerEvents: "none" },
+                        }}
+                        target={
+                            <>
+                                <Badge
+                                    onMouseEnter={() => setOpened(true)}
+                                    onClick={() => openPicker()}
+                                    onMouseLeave={() => setOpened(false)}
+                                    variant="outline"
+                                    style={{ paddingLeft: 3 }}
+                                    leftSection={"😀"}
+                                >
+                                    +
+                                </Badge>
+                                {showEmoji && (
+                                    <Picker
+                                        // onSelect={addEmojiIcon}
+                                        title="Pick your emoji…"
+                                        style={{
+                                            position: "absolute",
+                                            bottom: "0px",
+                                            left: "auto",
+                                            zIndex: "50",
+                                        }}
+                                        theme={"dark"}
+                                    />
+                                )}
+                            </>
+                        }
+                    >
+                        <div style={{ display: "flex" }}>
+                            <Text size="sm">Add reaction</Text>
+                        </div>
+                    </Popover>
+                </div>
             </div>
         </div>
     );

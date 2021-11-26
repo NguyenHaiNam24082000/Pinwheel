@@ -29,8 +29,8 @@ class MessageController extends Controller
 
     
     public function show(Request $request){
-        $messages = DB::select('SELECT sender_id as id,name,content,effect,kind,avatar,phone,messages.conversation_id as selectedConversationId,messages.updated_at,messages.created_at from messages,participants,users WHERE participants.user_id=messages.sender_id and users.id=participants.user_id and 
-        messages.conversation_id='.$request->conversation_id.' and messages.conversation_id = participants.conversation_id');
+        $messages = DB::select('SELECT sender_id as id,name,content,effect,kind,avatar,phone,messages.conversation_id as selectedConversationId,messages.updated_at,messages.created_at,messages.id as message_id from messages,participants,users WHERE participants.user_id=messages.sender_id and users.id=participants.user_id and 
+        messages.conversation_id='.$request->conversation_id.' and messages.conversation_id = participants.conversation_id order by messages.created_at');
         
         // table(DB::raw('messages, participants, users'))
         // ->where('participants.user_id', '=','messages.sender_id')
@@ -42,5 +42,15 @@ class MessageController extends Controller
         //SELECT * from `messages`,participants,users WHERE participants.user_id=messages.sender_id and users.id=participants.user_id and 
         //messages.conversation_id='200000000000001' and messages.conversation_id = participants.conversation_id;
         return response()->json(['chat'=>$messages]);
+    }
+
+    public function hideAndShowMessage(Request $request){
+        $upadateMessages= Messages::where('sender_id',$request->sender_id)
+        ->where('conversation_id','=',$request->conversation_id)
+        ->update($request->all());  
+        return response()->json([
+            'messages'=>$upadateMessages,
+            'status' => 'success',
+        ]);
     }
 }

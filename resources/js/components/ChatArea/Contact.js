@@ -7,13 +7,15 @@ import { AuthContext } from "../../context/AuthProvider";
 import { AppContext } from "../../context/AppProvider";
 import { SocketContext } from "../../context/socket";
 import $ from "jquery";
+import { Empty } from "@douyinfe/semi-ui";
+import {IllustrationNoResult, IllustrationNoResultDark } from '@douyinfe/semi-illustrations';
 
 export default function Contact() {
     // const [user,setUser]=useState({});
     const { socket } = React.useContext(SocketContext);
     // const { open: openModalAddFriend } = useModal("ModalAddFriend");
     // const { open: openModalStories } = useModal("ModalStories");
-     const[addfriend,setAddFriend]=useState([]);
+    const [addfriend, setAddFriend] = useState([]);
     const [openModalStories, setOpenModalStories] = useState(false);
     const [inputAddFriend, setInputAddFriend] = useState("");
     const [openModalAddFriend, setOpenModalAddFriend] = useState(false);
@@ -22,8 +24,17 @@ export default function Contact() {
     const [typing, setTyping] = useState("");
     const [search, setSearch] = useState("");
     const { user } = React.useContext(AuthContext);
-    const { searchContact, conversations, setSelectedConversationId,setConversations } =
-        React.useContext(AppContext);
+    const {
+        searchContact,
+        conversations,
+        setSelectedConversationId,
+        setConversations,
+    } = React.useContext(AppContext);
+
+    const emptyStyle = {
+        padding: 30,
+    };
+
     useEffect(() => {
         socket.on("serverSendLastData", (dataGot) => {
             setLastMessage(dataGot.data);
@@ -37,12 +48,10 @@ export default function Contact() {
             setTyping("");
         });
 
-        axios
-            .get(`/api/getlistusers/?userId=${user.id}&page=1`)
-            .then((res) => {
-                setAddFriend([...res.data.data])
-                console.log("abc",res)
-            });
+        axios.get(`/api/getlistusers/?userId=${user.id}&page=1`).then((res) => {
+            setAddFriend([...res.data.data]);
+            console.log("abc", res);
+        });
 
         // getUserInfo().then(res => setUser(res.data));
         // axios
@@ -76,49 +85,55 @@ export default function Contact() {
         // });
         return () => {};
     }, []);
-    console.log(conversations);
-    const postAddFriend = (id,e)=>{
-axios.post(`/api/postConversation/?creator_id=${user.id}&kind=friend&title=''`)
+    const postAddFriend = (id, e) => {
+        axios
+            .post(
+                `/api/postConversation/?creator_id=${user.id}&kind=friend&title=''`
+            )
             .then(function (response) {
-                 axios.post(`/api/postPaticipant/?conversation_id=${response.data.makefriend.id}&user_id=${user.id}&title=${user.name}`, {
-                myVar: 'myValue'
-              })
-           
-            const fr=addfriend.find((x)=> x.id ===id) ;
+                axios.post(
+                    `/api/postPaticipant/?conversation_id=${response.data.makefriend.id}&user_id=${user.id}&title=${user.name}`,
+                    {
+                        myVar: "myValue",
+                    }
+                );
 
-              axios.post(`/api/postPaticipant/?conversation_id=${response.data.makefriend.id}&user_id=${id}&title=${fr.name}`, {
-                  myVar: 'myValue'
-                })
-                const postPaticipant={
-                    "kind":"friend",
-                    "alias": fr.name,
-                    "conversation_id": response.data.makefriend.id,
-                    "id":id,
-                    "avatar": fr.avatar,
-                    "title": ""
+                const fr = addfriend.find((x) => x.id === id);
 
-                }
-               setConversations((conversationList) => [
+                axios.post(
+                    `/api/postPaticipant/?conversation_id=${response.data.makefriend.id}&user_id=${id}&title=${fr.name}`,
+                    {
+                        myVar: "myValue",
+                    }
+                );
+                const postPaticipant = {
+                    kind: "friend",
+                    alias: fr.name,
+                    conversation_id: response.data.makefriend.id,
+                    id: id,
+                    avatar: fr.avatar,
+                    title: "",
+                };
+                console.log("postPaticipant",postPaticipant);
+                setConversations((conversationList) => [
                     ...conversationList,
-                   postPaticipant,
+                    postPaticipant,
                 ]);
-                
-                $(`.btn-${id}`).text('đã kết bạn');
-                
+
             })
             .catch(function (error) {
                 console.log(error);
             });
-    }
-   const getSearchAddFriend=(keySearch)=>{
-    setAddFriend([]);
-    
-    axios.get(`/api/searchInAddfriend/?userId=${user.id}&name=${keySearch}`)
-    .then((res) => {
-       setAddFriend([...res.data])
-      
-    });
-   }
+    };
+    const getSearchAddFriend = (keySearch) => {
+        setAddFriend([]);
+
+        axios
+            .get(`/api/searchInAddfriend/?userId=${user.id}&name=${keySearch}`)
+            .then((res) => {
+                setAddFriend([...res.data]);
+            });
+    };
     const handleSearch = (e) => {
         setSearch(e.target.value);
     };
@@ -131,7 +146,7 @@ axios.post(`/api/postConversation/?creator_id=${user.id}&kind=friend&title=''`)
             >
                 Chat
             </div>
-            <div className="mb-5 mt-5 overflow-x-hidden p-2">
+            <div className="mb-5 mt-5 overflow-x-hidden p-2 flex-grow-0 flex" style={{height: 140}}>
                 <ul className="inline-flex space-x-6">
                     <li className="flex flex-col items-center space-y-1">
                         <div className="relative avatar">
@@ -150,7 +165,7 @@ axios.post(`/api/postConversation/?creator_id=${user.id}&kind=friend&title=''`)
                         <a href="#">You</a>
                     </li>
                     <li className="flex flex-col items-center space-y-1">
-<div className="avatar">
+                        <div className="avatar">
                             <div className="rounded-full w-16 h-16 ring ring-primary ring-offset-base-100 ring-offset-2">
                                 <img src="http://daisyui.com/tailwind-css-component-profile-1@94w.png" />
                             </div>
@@ -204,7 +219,7 @@ axios.post(`/api/postConversation/?creator_id=${user.id}&kind=friend&title=''`)
                         className="absolute top-0 right-0 rounded-l-none btn border-0 text-base btn-primary"
                         onClick={() => {
                             searchContact(search);
-}}
+                        }}
                     >
                         go
                     </button>
@@ -260,7 +275,7 @@ axios.post(`/api/postConversation/?creator_id=${user.id}&kind=friend&title=''`)
                                                     width: "6px",
                                                     height: "6px",
                                                     margin: "2px",
-}}
+                                                }}
                                             ></span>
                                             <span
                                                 className="circle scaling bg-white"
@@ -322,37 +337,68 @@ axios.post(`/api/postConversation/?creator_id=${user.id}&kind=friend&title=''`)
                         onChange={(e) => setInputAddFriend(e.target.value)}
                         type="text"
                         placeholder="https://bookmark.com"
-className="input input-bordered"
+                        className="input input-bordered"
                     />
                 </div>
                 <div className="rounded-box bordered mt-5 text-black flex-row items-center border-4 p-2">
                     {/* //{inputAddFriend.length >= 1 ? ( */}
-                   { addfriend &&
-                    addfriend.map((value, index) => (    
-                     <div key={index + value} className="flex items-center w-full p-5 hover:bg-gray-200 rounded-box cursor-pointer" >
-                         <div className="avatar online w-12 flex justify-center align-center mr-3 indicator">
-                             <div className="rounded-full w-12 h-12">
-                                 <img src={value.avatar} />
-                             </div>
-                         </div>
+                    {addfriend.length > 0 ? (
+                        addfriend.map((value, index) => (
+                            <div
+                                key={index + value}
+                                className="flex items-center w-full p-5 hover:bg-gray-200 rounded-box cursor-pointer"
+                            >
+                                <div className="avatar online w-12 flex justify-center align-center mr-3 indicator">
+                                    <div className="rounded-full w-12 h-12">
+                                        <img src={value.avatar.length<10||value.avatar===null?`https://avatars.dicebear.com/api/big-smile/${value.name}.svg`:value.avatar} />
+                                    </div>
+                                </div>
 
-                         <div className="flex flex-col w-full truncate overflow-ellipsis">
-                             <div className="truncate font-bold">
-                              {value.name}
-                             </div>
-                             <div className="truncate">
-                             Friend Suggestions
-                             </div>
-                         </div>
+                                <div className="flex flex-col w-full truncate overflow-ellipsis">
+                                    <div className="truncate font-bold">
+                                        {value.name}
+                                    </div>
+                                    <div className="truncate">
+                                        Friend Suggestions
+                                    </div>
+                                </div>
 
-                         <div className="w-20 mr-3 flex justify-center items-center text-center text-sm">
-                            <a className={`btn btn-primary btn-${value.id}`} onClick={(e)=>postAddFriend(value.id,e)}>Add Friend</a>
-                         </div>
-                     </div>
-                    ))}
+                                <div className="w-20 mr-3 flex justify-center items-center text-center text-sm">
+                                    <a
+                                        className={`btn btn-primary btn-${value.id}`}
+                                        onClick={(e) =>
+                                            postAddFriend(value.id, e)
+                                        }
+                                    >
+                                        Add Friend
+                                    </a>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <Empty
+                            image={
+                                <IllustrationNoResult
+                                    style={{ width: 150, height: 150 }}
+                                />
+                            }
+                            darkModeImage={
+                                <IllustrationNoResultDark
+                                    style={{ width: 150, height: 150 }}
+                                />
+                            }
+                            description={"No search results"}
+                            style={emptyStyle}
+                        />
+                    )}
                 </div>
                 <div className="modal-action">
-                    <a className="btn btn-primary" onClick={() => getSearchAddFriend(inputAddFriend)}>Search</a>
+                    <a
+                        className="btn btn-primary"
+                        onClick={() => getSearchAddFriend(inputAddFriend)}
+                    >
+                        Search
+                    </a>
                     <a
                         className="btn"
                         onClick={() => setOpenModalAddFriend(false)}

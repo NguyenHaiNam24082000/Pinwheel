@@ -7,9 +7,14 @@ import { BiUpArrow } from "react-icons/bi";
 import { SocketContext } from "../../context/socket";
 import PaintChanel from "./Chanels/PaintChanel";
 import ModalChanel from "../Modals/ModalChanel";
+import { Collapse } from "@douyinfe/semi-ui";
+import { Empty } from "@arco-design/web-react";
+import { Image, Space } from "@arco-design/web-react";
+const axios = require("axios").default;
 
 export default function Detail() {
     const { socket } = useContext(SocketContext);
+    const [visible, setVisible] = React.useState(false);
     const { conversations, selectedConversation, selectedConversationId } =
         React.useContext(AppContext);
     const { user } = React.useContext(AuthContext);
@@ -23,7 +28,18 @@ export default function Detail() {
     const [soundOff, setSoundOff] = useState(false);
     const [openModalPaintChanel, setOpenModalPaintChanel] = useState(false);
     const [listMic, setListMic] = useState([]);
-
+    const [images, setImages] = useState([]);
+    useEffect(() => {
+        axios
+            .get(`/api/getalllink/?conversation_id=${selectedConversationId}`)
+            .then((response) => {
+                setImages(response.data.filter((x) => x.kind === "photo"));
+                console.log(
+                    "imagesga",
+                    response.data.filter((x) => x.kind === "photo")
+                );
+            });
+    }, [selectedConversationId]);
     useEffect(() => {
         navigator.mediaDevices.getUserMedia({ audio: true }).then((stream) => {
             var mediaRecorder = new MediaRecorder(stream);
@@ -41,8 +57,7 @@ export default function Detail() {
                 var audioBlob = new Blob(audioChunks, {
                     type: "audio/ogg; codecs=opus",
                 });
-                if(!mute)
-                {
+                if (!mute) {
                     socket.emit("voice", audioBlob);
                 }
                 // var fileReader = new FileReader();
@@ -173,89 +188,36 @@ export default function Detail() {
                         </button>
                     </div>
                 </div>
-                <div className="collapse w-full border rounded-box border-base-300 collapse-arrow mb-3">
-                    <input type="checkbox" />
-                    <div className="collapse-title text-xl font-medium flex items-center">
-                        <BsFileEarmark className="mr-3" /> File
-                    </div>
-                    <div className="collapse-content">
-                        <div className="divider">Rỗng</div>
-                    </div>
-                </div>
-                <div className="collapse w-full border rounded-box border-base-300 collapse-arrow mb-3">
-                    <input type="checkbox" />
-                    <div className="collapse-title text-xl font-medium flex items-center">
-                        <BsFileEarmark className="mr-3" /> File
-                    </div>
-                    <div className="collapse-content">
-                        <div className="divider">Rỗng</div>
-                    </div>
-                </div>
-                <div className="collapse w-full border rounded-box border-base-300 collapse-arrow mb-3">
-                    <input type="checkbox" />
-                    <div className="collapse-title text-xl font-medium flex items-center">
-                        <BsFileEarmark className="mr-3" /> Image
-                    </div>
-                    <div className="collapse-content overflow-y-auto">
-                        {/* <div className="divider">Rỗng</div>  */}
-                        <div className="grid md:grid-flow-row grid-cols-3 grid-rows-3 gap-4">
-                            <div className="rounded-box w-20 h-20">
-                                <img
-                                    src="http://daisyui.com/tailwind-css-component-profile-1@94w.png"
-                                    className="rounded-box"
-                                />
-                            </div>
-                            <div className="rounded-box w-20 h-20">
-                                <img
-                                    src="http://daisyui.com/tailwind-css-component-profile-1@94w.png"
-                                    className="rounded-box"
-                                />
-                            </div>
-                            <div className="rounded-box w-20 h-20">
-                                <img
-                                    src="http://daisyui.com/tailwind-css-component-profile-1@94w.png"
-                                    className="rounded-box"
-                                />
-                            </div>
-                            <div className="rounded-box w-20 h-20">
-                                <img
-                                    src="http://daisyui.com/tailwind-css-component-profile-1@94w.png"
-                                    className="rounded-box"
-                                />
-                            </div>
-                            <div className="rounded-box w-20 h-20">
-                                <img
-                                    src="http://daisyui.com/tailwind-css-component-profile-1@94w.png"
-                                    className="rounded-box"
-                                />
-                            </div>
-                            <div className="rounded-box w-20 h-20">
-                                <img
-                                    src="http://daisyui.com/tailwind-css-component-profile-1@94w.png"
-                                    className="rounded-box"
-                                />
-                            </div>
-                            <div className="rounded-box w-20 h-20">
-                                <img
-                                    src="http://daisyui.com/tailwind-css-component-profile-1@94w.png"
-                                    className="rounded-box"
-                                />
-                            </div>
-                            <div className="rounded-box w-20 h-20">
-                                <img
-                                    src="http://daisyui.com/tailwind-css-component-profile-1@94w.png"
-                                    className="rounded-box"
-                                />
-                            </div>
-                            <div className="rounded-box w-20 h-20">
-                                <img
-                                    src="http://daisyui.com/tailwind-css-component-profile-1@94w.png"
-                                    className="rounded-box"
-                                />
-                            </div>
+                <Collapse style={{ textColor: "#fff" }}>
+                    <Collapse.Panel header="Link" ItemKey="1">
+                        <p>
+                            Hi, bytedance dance dance. This is the docsite of
+                            Semi UI.{" "}
+                        </p>
+                    </Collapse.Panel>
+                    <Collapse.Panel header="Folder" itemKey="2">
+                        <p>
+                            Hi, bytedance dance dance. This is the docsite of
+                            Semi UI.{" "}
+                        </p>
+                    </Collapse.Panel>
+                    <Collapse.Panel header="Images" itemKey="3">
+                        <div className="w-full flex">
+                            {images.length > 0 ? (
+                                images.map((value, index) => (
+                                    <Image
+                                        key={index}
+                                        src={value.attachment_tumb_url}
+                                        className="w-3/12 mr-5 h-16"
+                                    />
+                                    // <img key={index} src={value.attachment_tumb_url} alt=""/>
+                                ))
+                            ) : (
+                                <div className="divider">EMPTY</div>
+                            )}
                         </div>
-                    </div>
-                </div>
+                    </Collapse.Panel>
+                </Collapse>
             </div>
 
             <div
@@ -268,13 +230,28 @@ export default function Detail() {
                             <i className="fas fa-caret-down mr-3"></i>Text
                             Channels
                         </div>
-                        <div className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer" onClick={()=>setOpenModalPaintChanel(!openModalPaintChanel)}>
+                        <div
+                            className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer"
+                            onClick={() =>
+                                setOpenModalPaintChanel(!openModalPaintChanel)
+                            }
+                        >
                             <i className="fas fa-hashtag mr-2"></i>Paint
                         </div>
-                        <div className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer" onClick={()=>setOpenModalPaintChanel(!openModalPaintChanel)}>
+                        <div
+                            className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer"
+                            onClick={() =>
+                                setOpenModalPaintChanel(!openModalPaintChanel)
+                            }
+                        >
                             <i className="fas fa-hashtag mr-2"></i>Note
                         </div>
-                        <div className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer" onClick={()=>setOpenModalPaintChanel(!openModalPaintChanel)}>
+                        <div
+                            className="text-base font-bold hover:bg-primary pl-6 py-2 rounded cursor-pointer"
+                            onClick={() =>
+                                setOpenModalPaintChanel(!openModalPaintChanel)
+                            }
+                        >
                             <i className="fas fa-hashtag mr-2"></i>To do
                         </div>
                     </div>
@@ -561,8 +538,13 @@ export default function Detail() {
                     </div>
                 </div>
             </div>
-            <ModalChanel show={openModalPaintChanel} handleClose={()=>{setOpenModalPaintChanel(false)}}>
-                <PaintChanel/>
+            <ModalChanel
+                show={openModalPaintChanel}
+                handleClose={() => {
+                    setOpenModalPaintChanel(false);
+                }}
+            >
+                <PaintChanel />
             </ModalChanel>
         </div>
     );

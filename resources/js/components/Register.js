@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import ReCAPTCHA from "react-google-recaptcha";
 import { registerAuth } from "../context/Auth";
 import { useHistory } from "react-router-dom";
@@ -7,14 +7,19 @@ import { postNewUser } from "../context/UserProvider";
 const axios = require("axios").default;
 import * as Yup from "yup";
 import { CheckIcon, Cross1Icon } from "@modulz/radix-icons";
-import { MailIcon, LockIcon, PersonIcon, MentionIcon  } from "@primer/octicons-react";
+import {
+    MailIcon,
+    LockIcon,
+    PersonIcon,
+    MentionIcon,
+} from "@primer/octicons-react";
 import {
     PasswordInput,
     Progress,
     Text,
     Popover,
     TextInput,
-    LoadingOverlay
+    LoadingOverlay,
 } from "@mantine/core";
 
 function PasswordRequirement({ meets, label }) {
@@ -56,6 +61,19 @@ function NameRequirement({ meets, label }) {
     );
 }
 
+function UsernameRequirement({ meets, label }) {
+    return (
+        <Text
+            color={meets ? "teal" : "red"}
+            style={{ display: "flex", alignItems: "center", marginTop: 7 }}
+            size="sm"
+        >
+            {meets ? <CheckIcon /> : <Cross1Icon />}{" "}
+            <span style={{ marginLeft: 10 }}>{label}</span>
+        </Text>
+    );
+}
+
 const requirementsPassword = [
     { re: /[0-9]/, label: "Includes number" },
     { re: /[a-z]/, label: "Includes lowercase letter" },
@@ -64,6 +82,7 @@ const requirementsPassword = [
 ];
 
 const requirementsEmail = [{ re: /^\S+@\S+$/, label: "Must be email" }];
+const requirementsUsername = [{ re: /^\S+@\S+$/, label: "Must be email" }];
 
 function getStrengthPassword(password) {
     let multiplier = password.length > 5 ? 0 : 1;
@@ -94,10 +113,24 @@ function getStrengthEmail(email) {
         10
     );
 }
-const randomBG=()=>{
-    return Math.floor(
-        Math.random() * 12
-    )
+
+function getStrengthUsername(password) {
+    let multiplier = password.length > 5 ? 0 : 1;
+
+    requirementsUsername.forEach((requirement) => {
+        if (!requirement.re.test(password)) {
+            multiplier += 1;
+        }
+    });
+
+    return Math.max(
+        100 - (100 / (requirementsUsername.length + 1)) * multiplier,
+        10
+    );
+}
+
+const randomBG = () => {
+    return Math.floor(Math.random() * 12);
 };
 
 export default function Register() {
@@ -111,6 +144,7 @@ export default function Register() {
     const [popoverOpenedPassword, setPopoverOpenedPassword] = useState(false);
     const [popoverOpenedEmail, setPopoverOpenedEmail] = useState(false);
     const [loading, setLoading] = useState(false);
+    const randomRef = useRef(randomBG());
     const checksPassword = requirementsPassword.map((requirement, index) => (
         <PasswordRequirement
             key={index}
@@ -125,13 +159,27 @@ export default function Register() {
             meets={requirement.re.test(email)}
         />
     ));
+    const checksUsername = requirementsUsername.map((requirement, index) => (
+        <UsernameRequirement
+            key={index}
+            label={requirement.label}
+            meets={requirement.re.test(username)}
+        />
+    ));
 
     const strengthPassword = getStrengthPassword(password);
     const strengthEmail = getStrengthEmail(email);
+    const strengthUsername = getStrengthUsername(username);
     const colorPassword =
         strengthPassword === 100
             ? "teal"
             : strengthPassword > 50
+            ? "yellow"
+            : "red";
+    const colorUsername =
+        strengthUsername === 100
+            ? "teal"
+            : strengthUsername > 50
             ? "yellow"
             : "red";
     const colorEmail =
@@ -151,9 +199,9 @@ export default function Register() {
     const onHandleSubmit = async (event) => {
         event.preventDefault();
         setLoading(true);
-        setTimeout(()=>{
+        setTimeout(() => {
             setLoading(false);
-        },60000)
+        }, 60000);
         // const initialsValue = {
         //     name: username,
         //     email: email,
@@ -210,7 +258,7 @@ export default function Register() {
     //       }
     //}
     return (
-        <main className="flex flex-col h-screen bg-black w-full">
+        <main className="flex flex-col h-screen bg-black w-full text-white">
             <div className="grid grid-cols-1 md:grid-cols-2">
                 <div className="md:row-start-1 md:col-start-2 md:col-end-2 px-12 py-3">
                     <div className="flex flex-col justify-center h-full">
@@ -219,7 +267,7 @@ export default function Register() {
                             className="flex flex-col"
                             onSubmit={onHandleSubmit}
                         >
-                            <LoadingOverlay visible={loading}/>
+                            <LoadingOverlay visible={loading} />
                             <div className="form-control">
                                 <label className="label">
                                     <span className="label-text">Email:</span>
@@ -312,16 +360,16 @@ export default function Register() {
                                     }
                                 >
                                     <Progress
-                                        color={colorEmail}
-                                        value={strengthEmail}
+                                        color={colorUsername}
+                                        value={strengthUsername}
                                         size={5}
                                         style={{ marginBottom: 10 }}
                                     />
-                                    <EmailRequirement
+                                    <UsernameRequirement
                                         label="Includes at least 6 characters"
-                                        meets={email.length > 5}
+                                        meets={username.length > 5}
                                     />
-                                    {checksEmail}
+                                    {checksUsername}
                                 </Popover>
                                 <label className="label">
                                     <span className="label-text">Name:</span>
@@ -352,7 +400,7 @@ export default function Register() {
                                             required
                                             placeholder="Your Name"
                                             value={name}
-                                            icon={<PersonIcon  />}
+                                            icon={<PersonIcon />}
                                             onChange={(event) =>
                                                 setName(
                                                     event.currentTarget.value
@@ -557,7 +605,7 @@ export default function Register() {
                         // }}
                     >
                         <video
-                            src={`../../images/background/bg_video_${1}.mp4`}
+                            src={`../../images/background/bg_video_${randomRef.current}.mp4`}
                             autoPlay
                             muted
                             loop

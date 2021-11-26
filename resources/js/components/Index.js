@@ -10,6 +10,7 @@ import toast, { Toaster } from "react-hot-toast";
 import { BiWifiOff, BiWifi } from "react-icons/bi";
 import AuthProvider from "../context/AuthProvider";
 import AppProvider from "../context/AppProvider";
+import PDFReader from "./Previews/PDFReader";
 // import modals from "./Modals";
 // import { ModalProvider } from "react-simple-modal-provider";
 import PaintChanel from "./ChatArea/Chanels/PaintChanel";
@@ -131,6 +132,7 @@ function Index() {
                             <Route component={AvatarMaker} path="/avatar" />
                             <Route component={PaintChanel} path="/paint" />
                             <Route component={VideoCall} path="/videocall" />
+                            <Route component={PDFReader} path="/pdf" />
                             <Route exact path="/">
                                 <div
                                     className="w-full flex h-full bg-base-100 text-base-content"

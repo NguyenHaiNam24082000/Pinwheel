@@ -29,9 +29,11 @@ class CreateMessagesTable extends Migration
             $table->foreign('conversation_id')
                 ->references('id')->on('conversation')->onDelete('cascade');
             $table->enum('kind', ['text', 'video', 'audio', 'photo', 'document'])->default( 'text');
-            $table->string('content');
+            $table->text('content');
             $table->string('effect')->default('');
-            $table->boolean('is_seen')->default(0);
+            $table->unsignedBigInteger('reply_id')->nullable();
+            $table->foreign('reply_id')->references('id')->on('messages')->onDelete('cascade');
+            $table->boolean('is_remove')->default(0);
             $table->timestamps();
         });
     }

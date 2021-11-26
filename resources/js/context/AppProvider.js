@@ -68,7 +68,8 @@ export default function AppProvider({ children }) {
                 selectedConversationId,
                 setSelectedConversationId,
                 openDetail,
-                setOpenDetail
+                setOpenDetail,
+                setConversations
             }}
         >
             {children}

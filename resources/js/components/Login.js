@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState,useRef } from "react";
 import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { socialMediaAuth } from "../context/Auth";
@@ -76,6 +76,12 @@ function getStrengthEmail(email) {
     return Math.max(100 - (100 / (requirementsEmail.length + 1)) * multiplier, 10);
 }
 
+const randomBG=()=>{
+    return Math.floor(
+        Math.random() * 12
+    )
+};
+
 export default function Login() {
     const history = useHistory();
     const facebookAuth = new FacebookAuthProvider();
@@ -85,6 +91,7 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [popoverOpenedPassword, setPopoverOpenedPassword] = useState(false);
     const [popoverOpenedEmail, setPopoverOpenedEmail] = useState(false);
+    const randomRef=useRef(randomBG());
     const checksPassword = requirementsPassword.map((requirement, index) => (
         <PasswordRequirement
             key={index}
@@ -149,7 +156,7 @@ export default function Login() {
     }
 
     return (
-        <main className="flex flex-col h-screen bg-black">
+        <main className="flex flex-col h-screen bg-black text-white">
             <div className="grid grid-cols-1 md:grid-cols-2">
                 <div className="md:row-start-1 md:col-start-2 md:col-end-2 px-12 py-3">
                     <div className="flex flex-col justify-center h-full">
@@ -157,11 +164,11 @@ export default function Login() {
                             src="../../images/logo.svg"
                             className="w-24 mb-14"
                         /> */}
-                        <img
+                        {/* <img
                             src="../../images/logo.svg"
                             alt="logo"
                             className="cursor-pointer  w-20 h-20 mb-2 mask mask-squircle"
-                        />
+                        /> */}
                         <h1 className="text-3xl font-bold mb-2">
                             IMAGINE A PLACE...
                         </h1>
@@ -350,7 +357,7 @@ export default function Login() {
                         //     // "url(https://source.unsplash.com/random)",
                         // }}
                     >
-                        <video src={`../../images/background/bg_video_${Math.floor(Math.random()*12)}.mp4`} autoPlay muted loop className="w-full h-full"></video>
+                        <video src={`../../images/background/bg_video_${randomRef.current}.mp4`} autoPlay muted loop className="w-full h-full"></video>
                         {/* <div className="flex justify-center items-center h-full">
                             <img src="../../images/logo.svg" />
                         </div> */}

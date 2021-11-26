@@ -1465,3 +1465,44 @@
   background-image: url("../images/turky.jpg");
   background-size: cover;
 }
+
+.control-panel {
+  font-size: 16px;
+  color: black;
+  background-color: white;
+  border-radius: 5px;
+  width: 100%;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.disabled {
+  cursor: not-allowed;
+  color: lightgray;
+}
+
+.page-pdf
+{
+  height: 600px;
+}
+
+.mantine-Menu-body
+{
+  --tw-bg-opacity: 1;
+  background-color: hsla(var(--p) / var(--tw-bg-opacity)) !important;
+}
+
+image, video 
+{
+  object-fit: cover;
+}
+
+.mapboxgl-canvas {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+}
