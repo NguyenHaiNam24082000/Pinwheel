@@ -47,3 +47,4 @@ Route::get('/getalllink',[AttachmentController::class, 'getAllLink']);
 Route::put('/updateBookmark',[BookmarkController::class, 'updateLinkBookmark']);
 Route::get('/deleteBookmark',[BookmarkController::class, 'deleteLinkBookmark']);
 Route::put('/showandhidemessage',[MessageController::class, 'hideAndShowMessage']);
+Route::post('/uploadImage', [AttachmentController::class, 'uploadImage'])->name('images');

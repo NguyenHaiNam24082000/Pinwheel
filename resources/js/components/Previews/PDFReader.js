@@ -6,7 +6,7 @@ import ControlPanel from "./ControlPanel";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
-export default function PDFReader() {
+export default function PDFReader({src}) {
     const [scale, setScale] = useState(1.0);
     const [rotate, setRotate] = useState(0);
     const [numPages, setNumPages] = useState(null);
@@ -38,11 +38,11 @@ export default function PDFReader() {
                         setPageNumber={setPageNumber}
                         setRotate={setRotate}
                         rotate={rotate}
-                        file="../../../assets/docs/example.pdf"
+                        file={src}
                     />
                 )}
                 <Document
-                    file="../../../assets/docs/example.pdf"
+                    file={src}
                     onLoadSuccess={onDocumentLoadSuccess}
                     loading={<LoadingOverlay visible={visible} />}
                     className="flex flex-col justify-center items-center w-full"

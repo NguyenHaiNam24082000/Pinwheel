@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use App\Models\Attachment;
 
 class AttachmentController extends Controller
 {
@@ -37,26 +38,31 @@ class AttachmentController extends Controller
         ->get();
     }
 
-    public function upload(Request $request)
+    public function uploadImage(Request $request)
     {
-        if($request->hasFile('image')){ 
-            $tmp = $request->file('image');
-            $image = array();
-            foreach($tmp as $value)
-            {
-                $get_name_image = $value->getClientOriginalName();
-                $new_name = current(explode('.',$get_name_image));
-                $new_image = $new_name.rand(0,99).'.'.$value->getClientOriginalExtension();
-                $value->move('upload',$new_image);
-                array_push($image, (object)[
-                    'url' => $new_image , 
+        $imagesName = [];
+        $response = [];
+        if($request->has('images')){ 
+            $tmp = $request->file('images');
+            $index=0;
+            foreach($request->file('images') as $image) {
+                $filename = time().'-'.$index.'.'.$image->getClientOriginalExtension();
+                $image->move('upload/images', $filename);
+                $index+=1;
+                array_push($imagesName,$filename);
+                Attachment::create([
+                    'messages_id' => $request->message_id,
+                    "attachment_tumb_url" => "http://localhost:2408/upload/images/".$filename,
                 ]);
             }
-            return $image;
+
+            $response["status"] = "successs";
+            $response["message"] = "Success! image(s) uploaded";
+            $response["image"]=$imagesName;
         }
+        return response()->json($response);
 
-       
-
+        }
     }
     // public function getDocs(Request $request)
     // {
@@ -66,4 +72,3 @@ class AttachmentController extends Controller
     //     ->get();
     // }
 
-}

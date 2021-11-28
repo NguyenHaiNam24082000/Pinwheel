@@ -9,7 +9,7 @@ export default function useGeoLocation() {
     const onSuccess = location =>{
         setLocation({
             loaded: true,
-            coordinates: {lat:location.latitude,lng:location.longitude}
+            coordinates: {lat:location.coords.latitude,lng:location.coords.longitude}
         })
     }
 

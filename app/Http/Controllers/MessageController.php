@@ -29,7 +29,7 @@ class MessageController extends Controller
 
     
     public function show(Request $request){
-        $messages = DB::select('SELECT sender_id as id,name,content,effect,kind,avatar,phone,messages.conversation_id as selectedConversationId,messages.updated_at,messages.created_at,messages.id as message_id from messages,participants,users WHERE participants.user_id=messages.sender_id and users.id=participants.user_id and 
+        $messages = DB::select('SELECT sender_id as id,messages.id as message_id,name,content,effect,kind,avatar,phone,messages.conversation_id as selectedConversationId,messages.updated_at,messages.created_at,messages.id as message_id from messages,participants,users WHERE participants.user_id=messages.sender_id and users.id=participants.user_id and 
         messages.conversation_id='.$request->conversation_id.' and messages.conversation_id = participants.conversation_id order by messages.created_at');
         
         // table(DB::raw('messages, participants, users'))

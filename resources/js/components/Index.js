@@ -132,7 +132,9 @@ function Index() {
                             <Route component={AvatarMaker} path="/avatar" />
                             <Route component={PaintChanel} path="/paint" />
                             <Route component={VideoCall} path="/videocall" />
-                            <Route component={PDFReader} path="/pdf" />
+                            <Route path="/document-review?src=*" >
+                            <PDFReader src={window.location.href.split('?src=')[1]} />
+                            </Route>
                             <Route exact path="/">
                                 <div
                                     className="w-full flex h-full bg-base-100 text-base-content"

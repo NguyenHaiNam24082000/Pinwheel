@@ -336,7 +336,7 @@ export default function Contact() {
                         value={inputAddFriend}
                         onChange={(e) => setInputAddFriend(e.target.value)}
                         type="text"
-                        placeholder="https://bookmark.com"
+                        placeholder="Name"
                         className="input input-bordered"
                     />
                 </div>

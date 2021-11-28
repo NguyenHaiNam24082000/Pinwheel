@@ -11,6 +11,7 @@ import { formatRelative } from "date-fns/esm";
 import { Code, Spoiler } from "@mantine/core";
 import { Prism } from "@mantine/prism";
 import { Collapsible, Button } from "@douyinfe/semi-ui";
+import ModalChanel from "../Modals/ModalChanel";
 import { ActionIcon } from "@mantine/core";
 import { FiMoreVertical } from "react-icons/fi";
 import { Menu } from "@mantine/core";
@@ -28,8 +29,10 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import osm from "./osm-providers";
 import "leaflet/dist/leaflet.css";
+import PDFReader from "../Previews/PDFReader";
 const markerIcon = new L.Icon({
-    iconUrl: "https://xuonginthanhpho.com/wp-content/uploads/2020/03/map-marker-icon.png",
+    iconUrl:
+        "https://xuonginthanhpho.com/wp-content/uploads/2020/03/map-marker-icon.png",
     iconSize: [40, 40],
     iconAnchor: [17, 46], //[left/right, top/bottom]
     popupAnchor: [0, -46], //[left/right, top/bottom]
@@ -59,12 +62,15 @@ export default function Message({
     imageGallery,
     mid,
     time,
+    docGallery,
 }) {
     const [opened, setOpened] = useState(false);
     const [active, setActive] = React.useState(false),
         [position, setPosition] = React.useState({ x: 0, y: 0 });
     const [showEmoji, setShowEmoji] = useState(false);
     const [text, setText] = useState(content);
+    const [modalFileReader, setModalFileReader] = useState(false);
+    const [src,setSrc] = useState('');
 
     const [menuRadius, setMenuRadius] = React.useState(100),
         [itemRadius, setItemRadius] = React.useState(25);
@@ -344,7 +350,7 @@ export default function Message({
             };
             return (
                 <MapContainer
-                className="w-full h-80"
+                    className="w-full h-80"
                     center={{ lat: viewport.latitude, lng: viewport.longitude }}
                     zoom={8}
                 >
@@ -517,6 +523,12 @@ export default function Message({
         );
     }
 
+    const openModalFileReader=(srcpdf)=>{
+        console.log(srcpdf);
+        setSrc(srcpdf)
+        setModalFileReader(true)
+    }
+
     return (
         <div
             className={`flex rounded-box relative ${
@@ -639,6 +651,26 @@ export default function Message({
                                         ></img>
                                     </div>
                                 ))}
+                        {docGallery &&
+                            docGallery
+                                .filter((x) => x.messages_id === mid)
+                                .map((value, index) => (
+                                    <div
+                                        key={index + value}
+                                        className="inline-block mr-3 mt-3 rounded-box relative"
+                                        style={{
+                                            width: "108px",
+                                            height: "108px",
+                                        }}
+                                    >
+                                        <a onClick={()=>{openModalFileReader(value.attachment_url)}} target="_blank">
+                                            <img
+                                                src={"/images/file/DOC.svg"}
+                                                className="w-full h-full rounded-box"
+                                            ></img>
+                                        </a>
+                                    </div>
+                                ))}
                         {text.match(/(https?:\/\/\S+)/g) &&
                             text
                                 .match(/(https?:\/\/\S+)/g)
@@ -711,6 +743,10 @@ export default function Message({
                     </Popover>
                 </div>
             </div>
+            <ModalChanel show={modalFileReader}
+                handleClose={() => setModalFileReader(false)}>
+                <PDFReader src={src}/>
+            </ModalChanel>
         </div>
     );
 }

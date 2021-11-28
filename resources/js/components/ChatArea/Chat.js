@@ -20,6 +20,7 @@ import {
     IoAlarm,
     IoFlash,
     IoFolderOpen,
+    IoLocation,
 } from "react-icons/io5";
 import { IoIosMic } from "react-icons/io";
 import { GiSoundWaves } from "react-icons/gi";
@@ -35,7 +36,7 @@ import Message from "./Message";
 import SmoothList from "react-smooth-list";
 import { AppContext } from "../../context/AppProvider";
 import { AuthContext } from "../../context/AuthProvider";
-import {storage } from "../../firebase";
+import { storage } from "../../firebase";
 import {
     BsBoxArrowDownRight,
     BsBoxArrowInDownRight,
@@ -44,6 +45,7 @@ import {
 import { CgMoreR } from "react-icons/cg";
 import Modal from "../Modals/Modal";
 import { GiphyFetch } from "@giphy/js-fetch-api";
+import useGeoLocation from "../../hooks/useGeoLocation";
 import {
     Carousel,
     Gif,
@@ -96,6 +98,7 @@ function Chat() {
         setOpenDetail,
         openDetail,
     } = useContext(AppContext);
+    const [maxMessId, setMaxMessId] = useState(0);
     const [url, setUrl] = useState("");
     const [progress, setProgress] = useState(0);
     const { user } = useContext(AuthContext);
@@ -143,34 +146,36 @@ function Chat() {
     const handleUpload = () => {
         const uploadTask = storage.ref(`images/${image.name}`).put(image);
         uploadTask.on(
-          "state_changed",
-          snapshot => {
-            const progress = Math.round(
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            );
-            setProgress(progress);
-          },
-          error => {
-            console.log(error);
-          },
-          () => {
-            storage
-              .ref("images")
-              .child(image.name)
-              .getDownloadURL()
-              .then(url => {
-                setUrl(url);
-              });
-          }
+            "state_changed",
+            (snapshot) => {
+                const progress = Math.round(
+                    (snapshot.bytesTransferred / snapshot.totalBytes) * 100
+                );
+                setProgress(progress);
+            },
+            (error) => {
+                console.log(error);
+            },
+            () => {
+                storage
+                    .ref("images")
+                    .child(image.name)
+                    .getDownloadURL()
+                    .then((url) => {
+                        setUrl(url);
+                    });
+            }
         );
-      };
-    
+    };
 
     useEffect(() => {
         // socket.emit("online",user)
         // socket.on("getUsers", (data) => {
         //     console.log("Hello",data)
         // });
+        axios.get("/api/chat").then((res) => {
+            setMaxMessId(Math.max(...res.data.chat.map((chat) => chat.id)));
+        });
         fetch(
             "https://raw.githubusercontent.com/towzeur/Japanese-Emoticons-json/master/Japanese_Emoticons.json"
         )
@@ -206,6 +211,7 @@ function Chat() {
         return () => {};
     }, []);
     const [imageGallery, setImageGallery] = useState([]);
+    const [docGallery, setDocGallery] = useState([]);
     useEffect(() => {
         setMess([]);
         axios
@@ -222,6 +228,9 @@ function Chat() {
                 setImageGallery([
                     ...response.data.filter((x) => x.kind === "photo"),
                 ]);
+                setDocGallery([
+                    ...response.data.filter((x) => x.kind === "document"),
+                ]);
             });
         axios
             .get(`/api/chat/get/?conversation_id=${selectedConversationId}`)
@@ -229,7 +238,7 @@ function Chat() {
                 // handle success
                 setMess([...response.data.chat]);
                 scrollToBottom();
-                console.log(response);
+                console.log("chat", response);
             })
             .catch(function (error) {
                 // handle error
@@ -319,15 +328,53 @@ function Chat() {
                 content: message,
                 created_at: new Date().getTime(),
             });
-            axios.post("/api/chat/post", {
-                sender_id: user.id,
-                conversation_id: selectedConversationId,
-                kind: "text",
-                effect: effect === null || effect.length === 0 ? "''" : effect,
-                content: message,
-            });
+            //todo image
+            // axios.post("/api/chat/post", {
+            //     sender_id: user.id,
+            //     conversation_id: selectedConversationId,
+            //     kind: "text",
+            //     effect: effect === null || effect.length === 0 ? "''" : effect,
+            //     content: message,
+            // });
+            // setMaxMessId(maxMessId + 1);
+            if (images !== null) {
+                axios.post("/api/chat/post", {
+                    sender_id: user.id,
+                    conversation_id: selectedConversationId,
+                    kind: "photo",
+                    effect:
+                        effect === null || effect.length === 0 ? "''" : effect,
+                    content: message,
+                });
+                // let max;
+                // axios.get("/api/chat").then((res) => {
+                //     max = Math.max(...res.data.chat.map((chat) => chat.id));
+                // });
+                // console.log(max);
+                const data = new FormData();
+                for (let i = 0; i < images.length; i++) {
+                    data.append("images[]", images[i].target);
+                    data.append("message_id", maxMessId + 1);
+                }
+                axios.post("/api/uploadImage", data).then((response) => {
+                    if (response.status === 200) {
+                        console.log(response);
+                        setTimeout(() => {
+                            setImages([]);
+                        }, 500);
+                    }
+                });
+            } else {
+                axios.post("/api/chat/post", {
+                    sender_id: user.id,
+                    conversation_id: selectedConversationId,
+                    kind: "text",
+                    effect:
+                        effect === null || effect.length === 0 ? "''" : effect,
+                    content: message,
+                });
+            }
             socket.emit("clientSendData", msg);
-            setImages([]);
             setMessage("");
         }
     };
@@ -347,7 +394,8 @@ function Chat() {
                 avatar={m.avatar}
                 name={m.name}
                 images={m.images}
-                imageGallery={m.kind==='photo'?imageGallery:null}
+                imageGallery={m.kind === "photo" ? imageGallery : null}
+                docGallery={m.kind === "document" ? docGallery : null}
                 time={new Date(m.created_at).getTime()}
             />
         </SmoothList>
@@ -436,7 +484,7 @@ function Chat() {
             if (images.length < 10) {
                 setImages((image) => [
                     ...image,
-                    { id: images.length, src: fileReader.result },
+                    { id: images.length, src: fileReader.result, target: file },
                 ]);
                 // $(".preview-list")
                 //     .append(`<div class="inline-block ml-3 mt-3 rounded-box relative" style="width: 108px;height: 108px">
@@ -500,6 +548,17 @@ function Chat() {
     };
 
     const speechToText = () => {};
+    const location = useGeoLocation();
+    const showLocation = () => {
+        if (location.loaded && !location.error) {
+            console.log(location);
+            setMessage(
+                `[map:{lat:"${location.coordinates.lat}",lng:"${location.coordinates.lng}"}]`
+            )(sendMessage())();
+        } else {
+            alert(location.error.message);
+        }
+    };
 
     return (
         <div
@@ -510,7 +569,8 @@ function Chat() {
                 backgroundSize: "cover",
                 backgroundRepeat: "no-repeat",
                 // backgroundImage: "url(https://source.unsplash.com/random)",
-                backgroundImage: "url(https://images.unsplash.com/photo-1539213492139-7b268eb93c82?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1964&q=80)"
+                backgroundImage:
+                    "url(https://images.unsplash.com/photo-1539213492139-7b268eb93c82?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1964&q=80)",
             }}
         >
             <input
@@ -805,6 +865,14 @@ function Chat() {
                     <div className="tooltip" data-tip="Tin nhắn nhanh">
                         <button className="btn btn-primary bg-transparent border-0 cursor-pointer btn-square btn-xl mr-1">
                             <IoFlash className="w-5 h-5 text-base-content" />
+                        </button>
+                    </div>
+                    <div className="tooltip" data-tip="Vị trí của tôi">
+                        <button
+                            className="btn btn-primary bg-transparent border-0 cursor-pointer btn-square btn-xl mr-1"
+                            onClick={showLocation}
+                        >
+                            <IoLocation className="w-5 h-5 text-base-content" />
                         </button>
                     </div>
                 </div>

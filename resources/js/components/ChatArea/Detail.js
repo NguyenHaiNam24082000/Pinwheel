@@ -191,14 +191,12 @@ export default function Detail() {
                 <Collapse style={{ textColor: "#fff" }}>
                     <Collapse.Panel header="Link" ItemKey="1">
                         <p>
-                            Hi, bytedance dance dance. This is the docsite of
-                            Semi UI.{" "}
+                            Empty
                         </p>
                     </Collapse.Panel>
                     <Collapse.Panel header="Folder" itemKey="2">
                         <p>
-                            Hi, bytedance dance dance. This is the docsite of
-                            Semi UI.{" "}
+                            Empty
                         </p>
                     </Collapse.Panel>
                     <Collapse.Panel header="Images" itemKey="3">
